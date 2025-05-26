@@ -26,11 +26,13 @@ vyarus-use-python = "4.1.0"
 zxing-android-embedded = "4.3.0"
 # Do not upgrade zxing:core beyond 3.3.0 to ensure Android 6.0 compatibility, see issue #761.
 zxing-core = "3.3.0"
+lifecycleRuntimeKtx = "2.9.0"
+composeBom = "2024.09.00"
 
 [libraries]
 aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutLibraries" }
 aboutlibraries-compose-core = { module = "com.mikepenz:aboutlibraries-compose-core", version.ref = "aboutLibraries" }
-aboutlibraries-compose-m2 = { module = "com.mikepenz:aboutlibraries-compose", version.ref = "aboutLibraries" }
+aboutlibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutLibraries" }
 activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
 android-material = { module = "com.google.android.material:material", version.ref = "android-material" }
 annotation = { module = "androidx.annotation:annotation", version.ref = "annotation" }
@@ -59,6 +61,13 @@ stream = { module = "com.annimon:stream", version.ref = "stream" }
 volley = { module = "com.android.volley:volley", version.ref = "volley" }
 zxing-android-embedded = { module = "com.journeyapps:zxing-android-embedded", version.ref = "zxing-android-embedded" }
 zxing-core = { module = "com.google.zxing:core", version.ref = "zxing-core" }
+lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+material3 = { group = "androidx.compose.material3", name = "material3" }
 
 [plugins]
 aboutLibraries = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutLibraries" }
