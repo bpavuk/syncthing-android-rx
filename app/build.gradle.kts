@@ -7,14 +7,17 @@ plugins {
 }
 
 dependencies {
+    implementation(libs.lifecycle.runtime.ktx)
+    implementation(platform(libs.compose.bom))
+    implementation(libs.ui.graphics)
+    implementation(libs.material3)
     androidTestImplementation(libs.annotation)
     androidTestImplementation(libs.rules)
-    implementation(libs.aboutlibraries.compose.m2)
+    implementation(libs.aboutlibraries.compose.m3)
     implementation(libs.aboutlibraries.core)
     implementation(libs.activity.compose)
     implementation(libs.android.material)
     implementation(libs.compose.foundation)
-    implementation(libs.compose.material)
     implementation(libs.compose.material.icons.core)
     implementation(libs.compose.material.icons.extended)
     implementation(libs.compose.ui)
@@ -36,6 +39,10 @@ dependencies {
     implementation(libs.volley)
     implementation(libs.zxing.android.embedded) { isTransitive = false }
     implementation(libs.zxing.core)
+    androidTestImplementation(platform(libs.compose.bom))
+    androidTestImplementation(libs.ui.test.junit4)
+    debugImplementation(libs.ui.tooling)
+    debugImplementation(libs.ui.test.manifest)
     kapt(libs.dagger.compiler)
 }
 
