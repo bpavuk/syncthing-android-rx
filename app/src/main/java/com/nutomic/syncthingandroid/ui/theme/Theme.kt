@@ -1,6 +1,5 @@
-package com.nutomic.syncthingandroid.activities.ui.theme
+package com.nutomic.syncthingandroid.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

@@ -1,4 +1,4 @@
-package com.nutomic.syncthingandroid.activities.ui.theme
+package com.nutomic.syncthingandroid.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
