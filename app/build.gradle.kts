@@ -15,6 +15,7 @@ dependencies {
     androidTestImplementation(libs.rules)
     implementation(libs.aboutlibraries.compose.m3)
     implementation(libs.aboutlibraries.core)
+    implementation(libs.accompanist.permissions)
     implementation(libs.activity.compose)
     implementation(libs.android.material)
     implementation(libs.compose.foundation)

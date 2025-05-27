@@ -1,5 +1,6 @@
 [versions]
 aboutLibraries = "12.2.0"
+accompanist = "0.37.3"
 activity-compose = "1.10.1"
 android-material = "1.9.0"
 annotation = "1.2.0"
@@ -49,6 +50,8 @@ ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 
+# Compose Accompanist
+accompanist-permissions = { group = "com.google.accompanist", name="accompanist-permissions", version.ref = "accompanist" }
 
 # Dagger DI
 dagger = { module = "com.google.dagger:dagger", version.ref = "dagger" }
