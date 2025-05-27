@@ -21,7 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import com.nutomic.syncthingandroid.R
-import com.nutomic.syncthingandroid.activities.ui.theme.SyncthingandroidTheme
+import com.nutomic.syncthingandroid.ui.theme.SyncthingandroidTheme
 
 class LicenseActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
