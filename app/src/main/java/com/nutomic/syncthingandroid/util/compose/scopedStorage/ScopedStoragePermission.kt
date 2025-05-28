@@ -7,10 +7,14 @@ import android.os.Build
 import android.os.Environment
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import com.nutomic.syncthingandroid.util.compose.permissionBoilerplate.BoilerplatePermissionState
@@ -69,7 +73,11 @@ private class PreviewScopedStoragePermissionState(
 @RequiresApi(Build.VERSION_CODES.R)
 private class MutableScopedStoragePermissionState(
     private val context: Context
-) : ScopedStoragePermissionState, MutableBoilerplatePermissionState<String>() {
+) : ScopedStoragePermissionState, MutableBoilerplatePermissionState<String> {
+    override var granted: Boolean by mutableStateOf(getPermissionStatus())
+
+    override var launcher: ActivityResultLauncher<String>? = null
+
     @SuppressLint("LongLogTag")
     override fun requestPermission() {
         try {
@@ -80,7 +88,6 @@ private class MutableScopedStoragePermissionState(
         } catch (e: ActivityNotFoundException) {
             Log.w("MutableScopedStoragePermissionState", "Request all files access not supported", e)
         }
-
     }
 
     override fun getPermissionStatus(): Boolean {
