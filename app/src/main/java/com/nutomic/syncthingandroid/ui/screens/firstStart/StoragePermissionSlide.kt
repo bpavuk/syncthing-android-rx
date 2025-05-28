@@ -23,7 +23,7 @@ import com.nutomic.syncthingandroid.R
 import com.nutomic.syncthingandroid.ui.common.slides.SlideState
 import com.nutomic.syncthingandroid.ui.common.slides.rememberSlideState
 import com.nutomic.syncthingandroid.ui.theme.SyncthingandroidTheme
-import com.nutomic.syncthingandroid.util.compose.rememberScopedStoragePermissionState
+import com.nutomic.syncthingandroid.util.compose.scopedStorage.rememberScopedStoragePermissionState
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable

@@ -1,29 +1,21 @@
-package com.nutomic.syncthingandroid.util.compose
+package com.nutomic.syncthingandroid.util.compose.scopedStorage
 
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Context
-import android.content.Intent
 import android.os.Build
 import android.os.Environment
-import android.provider.Settings
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
-import androidx.core.net.toUri
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.nutomic.syncthingandroid.util.compose.scopedStorage.ScopedStorageContract
+import com.nutomic.syncthingandroid.util.compose.permissionBoilerplate.BoilerplatePermissionState
+import com.nutomic.syncthingandroid.util.compose.permissionBoilerplate.MutableBoilerplatePermissionState
+import com.nutomic.syncthingandroid.util.compose.permissionBoilerplate.PermissionLifecycleCheckerEffect
 
 @RequiresApi(Build.VERSION_CODES.R)
 @Composable
@@ -66,29 +58,7 @@ private fun rememberMutableScopedStoragePermissionState(): MutableScopedStorageP
     return permissionState
 }
 
-@RequiresApi(Build.VERSION_CODES.R)
-@Composable
-private fun PermissionLifecycleCheckerEffect(permissionState: MutableScopedStoragePermissionState) {
-    val permissionCheckerObserver = LifecycleEventObserver { _, event ->
-        if (event == Lifecycle.Event.ON_RESUME) {
-            permissionState.refreshPermissionStatus()
-        }
-    }
-
-    val lifecycle = LocalLifecycleOwner.current.lifecycle
-    DisposableEffect(lifecycle, permissionCheckerObserver) {
-        lifecycle.addObserver(permissionCheckerObserver)
-        onDispose {
-            lifecycle.removeObserver(permissionCheckerObserver)
-        }
-    }
-}
-
-interface ScopedStoragePermissionState {
-    val granted: Boolean
-
-    fun requestPermission()
-}
+interface ScopedStoragePermissionState : BoilerplatePermissionState
 
 private class PreviewScopedStoragePermissionState(
     override val granted: Boolean
@@ -99,13 +69,9 @@ private class PreviewScopedStoragePermissionState(
 @RequiresApi(Build.VERSION_CODES.R)
 private class MutableScopedStoragePermissionState(
     private val context: Context
-) : ScopedStoragePermissionState {
-    override var granted: Boolean by mutableStateOf(getPermissionStatus())
-
+) : ScopedStoragePermissionState, MutableBoilerplatePermissionState<String>() {
     @SuppressLint("LongLogTag")
     override fun requestPermission() {
-        val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-        intent.setData(("package:" + context.packageName).toUri())
         try {
             // Launch "Allow all files access?" dialog.
             launcher?.launch(context.packageName)
@@ -117,13 +83,7 @@ private class MutableScopedStoragePermissionState(
 
     }
 
-    var launcher: ActivityResultLauncher<String>? = null
-
-    fun getPermissionStatus(): Boolean {
+    override fun getPermissionStatus(): Boolean {
         return Environment.isExternalStorageManager()
-    }
-
-    fun refreshPermissionStatus() {
-        granted = getPermissionStatus()
     }
 }
