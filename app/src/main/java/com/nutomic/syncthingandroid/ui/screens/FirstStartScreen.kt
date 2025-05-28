@@ -3,6 +3,7 @@ package com.nutomic.syncthingandroid.ui.screens
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -42,7 +43,7 @@ fun FirstStartScreen(
         modifier = modifier,
         bottomBar = {
             SlidesController(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().safeContentPadding(),
                 slideState = slideState,
                 onForward = { slideState.nextSlide() },
                 onBack = { slideState.previousSlide() },
@@ -52,26 +53,26 @@ fun FirstStartScreen(
     ) { innerPadding ->
         when (slides[slideState.currentSlide - 1]) {
             Slide.Welcome -> WelcomeSlide(
-                Modifier.padding(innerPadding)
+                Modifier.padding(innerPadding).safeContentPadding()
             )
             Slide.StoragePermission -> StoragePermissionSlide(
-                Modifier.padding(innerPadding),
+                Modifier.padding(innerPadding).safeContentPadding(),
                 slideState = slideState
             )
             Slide.IgnoreDozePermission -> IgnoreDozePermissionSlide(
-                Modifier.padding(innerPadding),
+                Modifier.padding(innerPadding).safeContentPadding(),
                 slideState = slideState
             )
             Slide.LocationPermission -> LocationPermissionSlide(
-                Modifier.padding(innerPadding),
+                Modifier.padding(innerPadding).safeContentPadding(),
                 slideState = slideState
             )
             Slide.NotificationPermission -> NotificationPermissionSlide(
-                Modifier.padding(innerPadding),
+                Modifier.padding(innerPadding).safeContentPadding(),
                 slideState = slideState
             )
             Slide.KeyGeneration -> KeyGenerationSlide(
-                Modifier.padding(innerPadding),
+                Modifier.padding(innerPadding).safeContentPadding(),
                 slideState = slideState
             )
         }
