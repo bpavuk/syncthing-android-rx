@@ -51,6 +51,7 @@ fun NotificationPermissionSlide(modifier: Modifier = Modifier, slideState: Slide
                         permission = Manifest.permission.POST_NOTIFICATIONS
                     )
                     if (notificationPermission.status.isGranted) {
+                        slideState.forwardBlocked = false
                         Text("Enabled!")
                     } else {
                         Text(stringResource(R.string.notification_permission_desc))
