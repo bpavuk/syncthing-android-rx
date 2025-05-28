@@ -7,14 +7,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.application
-import androidx.lifecycle.viewModelScope
-import com.nutomic.syncthingandroid.service.Constants
 import com.nutomic.syncthingandroid.service.SyncthingRunnable
 import com.nutomic.syncthingandroid.util.ConfigXml
 import com.nutomic.syncthingandroid.util.ConfigXml.OpenConfigException
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
+import com.nutomic.syncthingandroid.util.parseableConfigExists
 
 interface KeyGenerationViewModel {
     val state: KeyGenerationState
@@ -35,43 +31,28 @@ class KeyGenerationViewModelImpl(application: Application) : AndroidViewModel(ap
         private set
 
     override fun launchKeyGeneration() {
-        viewModelScope.launch {
-            if (shouldGenerateKey().await()) {
-                val configXml = ConfigXml(application)
-                try {
-                    configXml.generateConfig()
-                } catch (e: SyncthingRunnable.ExecutableNotFoundException) {
-                    Log.e(TAG, "Executable not found!", e)
-                    state = KeyGenerationState.ExecutableNotFound
-                    return@launch
-                } catch (e: OpenConfigException) {
-                    Log.e(TAG, "Failed to open config!", e)
-                    state = KeyGenerationState.Failed
-                    return@launch
-                }
-            }
-
-            state = KeyGenerationState.Success
-        }
-    }
-
-    fun shouldGenerateKey(): Deferred<Boolean> =
-        viewModelScope.async {
-            val configExists = Constants.getConfigFile(application).exists()
-            if (!configExists) {
-                return@async false
-            }
-            var configParseable = false
-            val configParseTest = ConfigXml(application)
+        if (!parseableConfigExists(application)) {
+            val configXml = ConfigXml(application)
             try {
-                configParseTest.loadConfig()
-                configParseable = true
-            } catch (_: OpenConfigException) {
-                Log.d(TAG, "Failed to parse existing config. Will show key generation slide...")
+                configXml.generateConfig()
+            } catch (e: SyncthingRunnable.ExecutableNotFoundException) {
+                Log.e(TAG, "Executable not found!", e)
+                state = KeyGenerationState.ExecutableNotFound
+                return
+            } catch (e: OpenConfigException) {
+                Log.e(TAG, "Failed to open config!", e)
+                state = KeyGenerationState.Failed
+                return
             }
-            return@async configParseable
+
+            // Double-check!
+            if (!parseableConfigExists(application)) {
+                state = KeyGenerationState.Failed
+            }
         }
 
+        state = KeyGenerationState.Success
+    }
 }
 
 sealed interface KeyGenerationState {

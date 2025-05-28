@@ -52,6 +52,8 @@ fun KeyGenerationSlide(
                 KeyGenerationState.InProgress -> R.string.web_gui_creating_key
                 KeyGenerationState.Success -> R.string.key_generation_success
             }
+            if (state == KeyGenerationState.Success) slideState.forwardBlocked = false
+
             Text(stringResource(textToShow))
         }
         LaunchedEffect(Unit) {
