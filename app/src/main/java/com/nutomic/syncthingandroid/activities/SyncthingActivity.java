@@ -28,7 +28,7 @@ public abstract class SyncthingActivity extends ThemedAppCompatActivity implemen
     /**
      * Look for a Toolbar in the layout and bind it as the activity's actionbar with reasonable
      * defaults.
-     *
+     * <p>
      * The Toolbar must exist in the content view and have an id of R.id.toolbar. Trying to call
      * getSupportActionBar before this Activity's onPostCreate will cause a crash.
      */
