@@ -75,12 +75,8 @@
         <activity
             android:name=".activities.FirstStartComposeActivity"
             android:exported="true"
-            android:label="@string/title_activity_first_start_compose"
-            android:theme="@style/Theme.Syncthing" />
-        <activity
-            android:name=".activities.FirstStartActivity"
-            android:exported="true"
-            android:launchMode="singleInstance">
+            android:launchMode="singleInstance"
+            android:theme="@style/Theme.Syncthing">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
