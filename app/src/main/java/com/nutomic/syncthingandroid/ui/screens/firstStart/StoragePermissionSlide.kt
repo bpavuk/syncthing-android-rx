@@ -35,6 +35,7 @@ fun StoragePermissionSlide(modifier: Modifier = Modifier, slideState: SlideState
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        slideState.forwardBlocked = true
         Box(
             modifier = Modifier.weight(0.3f),
             contentAlignment = Alignment.Center
@@ -51,6 +52,7 @@ fun StoragePermissionSlide(modifier: Modifier = Modifier, slideState: SlideState
                 if (storagePermissionState.status.isGranted) {
                     // All set!
                     Text("All set!")
+                    slideState.forwardBlocked = false
                 } else {
                     // TODO: use string res
                     val text = if (storagePermissionState.status.shouldShowRationale) {
@@ -70,11 +72,12 @@ fun StoragePermissionSlide(modifier: Modifier = Modifier, slideState: SlideState
                 val storagePermissionState = rememberScopedStoragePermissionState()
 
                 Text("Let's set up Scoped Storage permissions!")
-                Text(storagePermissionState.granted.toString())
                 if (!storagePermissionState.granted) {
                     Button(onClick = { storagePermissionState.requestPermission() }) {
                         Text(stringResource(R.string.grant_permission))
                     }
+                } else {
+                    slideState.forwardBlocked = false
                 }
             }
         }
