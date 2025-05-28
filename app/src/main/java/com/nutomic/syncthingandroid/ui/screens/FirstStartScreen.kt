@@ -52,8 +52,7 @@ fun FirstStartScreen(
     ) { innerPadding ->
         when (slides[slideState.currentSlide - 1]) {
             Slide.Welcome -> WelcomeSlide(
-                Modifier.padding(innerPadding),
-                slideState = slideState
+                Modifier.padding(innerPadding)
             )
             Slide.StoragePermission -> StoragePermissionSlide(
                 Modifier.padding(innerPadding),
