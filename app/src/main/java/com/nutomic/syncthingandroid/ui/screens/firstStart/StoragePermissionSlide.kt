@@ -20,12 +20,14 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import com.nutomic.syncthingandroid.R
+import com.nutomic.syncthingandroid.ui.common.slides.SlideState
+import com.nutomic.syncthingandroid.ui.common.slides.rememberSlideState
 import com.nutomic.syncthingandroid.ui.theme.SyncthingandroidTheme
 import com.nutomic.syncthingandroid.util.compose.rememberScopedStoragePermissionState
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun StoragePermissionSlide(modifier: Modifier = Modifier) {
+fun StoragePermissionSlide(modifier: Modifier = Modifier, slideState: SlideState) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -84,7 +86,8 @@ fun StoragePermissionSlide(modifier: Modifier = Modifier) {
 private fun StoragePermissionPreview() {
     SyncthingandroidTheme {
         StoragePermissionSlide(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            slideState = rememberSlideState(1, 1)
         )
     }
 }

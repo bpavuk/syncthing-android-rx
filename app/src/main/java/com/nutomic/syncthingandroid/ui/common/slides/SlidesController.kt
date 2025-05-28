@@ -15,11 +15,11 @@ import com.nutomic.syncthingandroid.ui.common.Dots
 
 @Composable
 fun SlidesController(
+    slideState: SlideState, // forcing to hoist the state outside SlidesController
+    onBack: () -> Unit,
+    onForward: () -> Unit,
+    onFinish: () -> Unit,
     modifier: Modifier = Modifier,
-    backHandler: (() -> Unit)? = null,
-    forwardHandler: (() -> Unit)? = null,
-    activeSlideNumber: Int,
-    slideCount: Int
 ) {
     Box(modifier = modifier) {
         Row(
@@ -28,16 +28,18 @@ fun SlidesController(
             verticalAlignment = Alignment.CenterVertically
         ) {
             OutlinedButton(
-                backHandler ?: {},
-                enabled = backHandler != null
+                onClick = onBack,
+                enabled = slideState.canGoBack && !slideState.backBlocked
             ) {
                 Text(stringResource(R.string.back))
             }
             Button(
-                forwardHandler ?: {},
-                enabled = forwardHandler != null
+                onClick = if (slideState.displayFinish) onFinish else onForward,
+                enabled = slideState.canGoForward && !slideState.forwardBlocked
             ) {
-                Text(stringResource(R.string.cont))
+                Text(stringResource(
+                    id = if (slideState.displayFinish) R.string.finish else R.string.cont)
+                )
             }
         }
         Box(
@@ -45,7 +47,7 @@ fun SlidesController(
             contentAlignment = Alignment.Center
         ) {
             Row {
-                Dots(activeDot = activeSlideNumber, dotAmount = slideCount)
+                Dots(activeDot = slideState.currentSlide, dotAmount = slideState.maxSlides)
             }
         }
     }

@@ -52,7 +52,8 @@ class FirstStartComposeActivity : ComponentActivity() {
             SyncthingandroidTheme {
                 FirstStartScreen(
                     modifier = Modifier.fillMaxSize(),
-                    slides = slides
+                    slides = slides,
+                    onIntroFinished = {}
                 )
             }
         }
@@ -190,5 +191,3 @@ class FirstStartComposeActivity : ComponentActivity() {
         private const val REQUEST_NOTIFICATION = 145
     }
 }
-
-
