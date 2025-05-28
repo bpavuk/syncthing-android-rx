@@ -9,10 +9,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.nutomic.syncthingandroid.ui.common.slides.SlideState
+import com.nutomic.syncthingandroid.ui.common.slides.rememberSlideState
 import com.nutomic.syncthingandroid.ui.theme.SyncthingandroidTheme
 
 @Composable
-fun LocationPermissionSlide(modifier: Modifier = Modifier) {
+fun LocationPermissionSlide(modifier: Modifier = Modifier, slideState: SlideState) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -29,7 +31,8 @@ fun LocationPermissionSlide(modifier: Modifier = Modifier) {
 private fun LocationPermissionPreview() {
     SyncthingandroidTheme {
         LocationPermissionSlide(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            slideState = rememberSlideState(1, 1)
         )
     }
 }

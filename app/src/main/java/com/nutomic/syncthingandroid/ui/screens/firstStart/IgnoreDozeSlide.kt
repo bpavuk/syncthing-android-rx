@@ -9,10 +9,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.nutomic.syncthingandroid.ui.common.slides.SlideState
+import com.nutomic.syncthingandroid.ui.common.slides.rememberSlideState
 import com.nutomic.syncthingandroid.ui.theme.SyncthingandroidTheme
 
 @Composable
-fun IgnoreDozePermissionSlide(modifier: Modifier = Modifier) {
+fun IgnoreDozePermissionSlide(modifier: Modifier = Modifier, slideState: SlideState) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -29,7 +31,8 @@ fun IgnoreDozePermissionSlide(modifier: Modifier = Modifier) {
 private fun IgnoreDozePermissionPreview() {
     SyncthingandroidTheme {
         IgnoreDozePermissionSlide(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            slideState = rememberSlideState(1, 1)
         )
     }
 }
