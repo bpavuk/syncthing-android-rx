@@ -1,6 +1,5 @@
 package com.nutomic.syncthingandroid.activities;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.ComponentName;
@@ -33,7 +32,6 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
@@ -345,7 +343,7 @@ public class MainActivity extends SyncthingActivity
     public void onResume() {
         // Check if storage permission has been revoked at runtime.
         if (!PermissionUtil.haveStoragePermission(this)) {
-            startActivity(new Intent(this, FirstStartActivity.class));
+            startActivity(new Intent(this, FirstStartComposeActivity.class));
             this.finish();
             super.onResume();
             return;

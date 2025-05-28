@@ -1,33 +1,36 @@
 package com.nutomic.syncthingandroid.activities
 
 import android.Manifest
-import android.content.pm.PackageManager
+import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import com.nutomic.syncthingandroid.service.Constants
 import com.nutomic.syncthingandroid.ui.screens.FirstStartScreen
 import com.nutomic.syncthingandroid.ui.screens.Slide
 import com.nutomic.syncthingandroid.ui.theme.SyncthingandroidTheme
-import com.nutomic.syncthingandroid.util.ConfigXml
-import com.nutomic.syncthingandroid.util.ConfigXml.OpenConfigException
+import com.nutomic.syncthingandroid.util.compose.doze.rememberDozePermissionState
+import com.nutomic.syncthingandroid.util.compose.scopedStorage.rememberScopedStoragePermissionState
+import com.nutomic.syncthingandroid.util.parseableConfigExists
+import javax.inject.Inject
 
-class FirstStartComposeActivity : ComponentActivity() {
+class FirstStartComposeActivity : AppCompatActivity() {
+    @Inject
+    @JvmField
+    var mPreferences: SharedPreferences? = null // TODO: replace with Hilt/Koin
 
-
+    @OptIn(ExperimentalPermissionsApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val showSlideLocationPermission = !haveLocationPermission()
-        val showSlideNotificationPermission = !haveNotificationPermission()
-        val showSlideKeyGeneration = !checkForParseableConfig()
         val slides = mutableListOf<Slide>()
 
         slides.add(Slide.Welcome)
@@ -35,109 +38,77 @@ class FirstStartComposeActivity : ComponentActivity() {
         slides.add(Slide.IgnoreDozePermission)
         slides.add(Slide.LocationPermission)
         slides.add(Slide.NotificationPermission)
-        if (showSlideKeyGeneration) slides.add(Slide.KeyGeneration)
+        slides.add(Slide.KeyGeneration)
 
         enableEdgeToEdge()
         setContent {
+            val isStorageGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                rememberScopedStoragePermissionState().granted
+            } else {
+                rememberPermissionState(
+                    permission = Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ).status.isGranted
+            }
+            val isDozeGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                rememberDozePermissionState().granted
+            } else {
+                true // assume true for earlier Android versions where Doze is non-existent
+            }
+            val isNotificationPermissionGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                rememberPermissionState(
+                    permission = Manifest.permission.POST_NOTIFICATIONS
+                ).status.isGranted
+            } else {
+                true // not needed on earlier Android versions
+            }
+            val isKeyConfigValid = parseableConfigExists(application)
+
+            val shouldSkip = isStorageGranted && isDozeGranted
+                    && isNotificationPermissionGranted && isKeyConfigValid
+
+            if (shouldSkip) {
+                val intent = Intent(this, MainActivity::class.java)
+
+                if (mPreferences?.getBoolean(
+                        Constants.PREF_START_INTO_WEB_GUI,
+                        false
+                    ) == true) {
+                    startActivities(arrayOf(
+                        intent,
+                        Intent(this, WebGuiActivity::class.java)
+                    ))
+                } else {
+                    startActivity(intent)
+                }
+                finish()
+            }
+
             SyncthingandroidTheme {
                 FirstStartScreen(
                     modifier = Modifier.fillMaxSize(),
                     slides = slides,
-                    onIntroFinished = {}
+                    onIntroFinished = ::startApp
                 )
             }
         }
     }
 
-    private fun haveLocationPermission(): Boolean {
-        val coarseLocationGranted = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-        var backgroundLocationGranted = true
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            backgroundLocationGranted = ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        }
-        return coarseLocationGranted && backgroundLocationGranted
-    }
 
-    private fun requestLocationPermission() {
-        when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                    ),
-                    REQUEST_FINE_LOCATION
-                )
-            }
-            Build.VERSION.SDK_INT == Build.VERSION_CODES.Q -> {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                    ),
-                    REQUEST_BACKGROUND_LOCATION
-                )
-            }
-            else -> ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
-                REQUEST_COARSE_LOCATION
-            )
-        }
-    }
-
-    private fun haveNotificationPermission(): Boolean {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            return true
-        }
-        return ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.POST_NOTIFICATIONS
-        ) == PackageManager.PERMISSION_GRANTED
-    }
-
-    private fun requestNotificationPermission() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            return
-        }
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-            REQUEST_NOTIFICATION
-        )
-    }
-
-    private fun checkForParseableConfig(): Boolean {
+    private fun startApp() {
+        val mainIntent = Intent(this, MainActivity::class.java)
         /**
-         * Check if a valid config exists that can be read and parsed.
+         * In case start_into_web_gui option is enabled, start both activities
+         * so that back navigation works as expected.
          */
-        val configExists = Constants.getConfigFile(this).exists()
-        if (!configExists) {
-            return false
+        if (mPreferences?.getBoolean(Constants.PREF_START_INTO_WEB_GUI, false) == true) {
+            startActivities(arrayOf(mainIntent, Intent(this, WebGuiActivity::class.java)))
+        } else {
+            startActivity(mainIntent)
         }
-        var configParseable = false
-        val configParseTest = ConfigXml(this)
-        try {
-            configParseTest.loadConfig()
-            configParseable = true
-        } catch (e: OpenConfigException) {
-            Log.d(TAG, "Failed to parse existing config. Will show key generation slide ...")
-        }
-        return configParseable
+        finish()
     }
 
     companion object {
         private const val TAG = "FirstStartCompose"
-        private const val REQUEST_COARSE_LOCATION = 141
-        private const val REQUEST_BACKGROUND_LOCATION = 142
-        private const val REQUEST_FINE_LOCATION = 144
-        private const val REQUEST_NOTIFICATION = 145
     }
 }
