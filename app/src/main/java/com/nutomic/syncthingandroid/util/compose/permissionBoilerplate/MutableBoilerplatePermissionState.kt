@@ -1,18 +1,15 @@
 package com.nutomic.syncthingandroid.util.compose.permissionBoilerplate
 
 import androidx.activity.result.ActivityResultLauncher
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 
-abstract class MutableBoilerplatePermissionState<T> : BoilerplatePermissionState {
-    override var granted: Boolean by mutableStateOf(getPermissionStatus())
+interface MutableBoilerplatePermissionState<T> : BoilerplatePermissionState {
+    override var granted: Boolean
 
-    var launcher: ActivityResultLauncher<T>? = null
+    var launcher: ActivityResultLauncher<T>?
 
-    abstract fun getPermissionStatus(): Boolean
+    fun getPermissionStatus(): Boolean
 
-    open fun refreshPermissionStatus() {
+    fun refreshPermissionStatus() {
         granted = getPermissionStatus()
     }
 }
