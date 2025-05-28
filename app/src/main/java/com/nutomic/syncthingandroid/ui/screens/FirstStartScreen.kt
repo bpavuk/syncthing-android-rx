@@ -5,14 +5,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.nutomic.syncthingandroid.ui.common.slides.SlidesController
+import com.nutomic.syncthingandroid.ui.common.slides.rememberSlideState
 import com.nutomic.syncthingandroid.ui.screens.firstStart.IgnoreDozePermissionSlide
 import com.nutomic.syncthingandroid.ui.screens.firstStart.KeyGenerationSlide
 import com.nutomic.syncthingandroid.ui.screens.firstStart.LocationPermissionSlide
@@ -35,54 +32,49 @@ sealed interface Slide {
 @Composable
 fun FirstStartScreen(
     slides: List<Slide>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onIntroFinished: () -> Unit
 ) {
     // TODO: migrate to Nav3 when it's out of Alpha
     val slideCount = slides.count()
-    var currentSlideIndex by remember { mutableIntStateOf(0) }
+    val slideState = rememberSlideState(slideCount, 1)
     Scaffold(
         modifier = modifier,
         bottomBar = {
             SlidesController(
                 modifier = Modifier.fillMaxWidth(),
-                backHandler = if (currentSlideIndex <= 0) {
-                    null
-                } else {
-                    {
-                        currentSlideIndex -= 1
-                    }
-                },
-                forwardHandler = {
-                    when (slides[currentSlideIndex]) {
-                        Slide.IgnoreDozePermission -> TODO()
-                        Slide.KeyGeneration -> TODO()
-                        Slide.LocationPermission -> TODO()
-                        Slide.NotificationPermission -> TODO()
-                        Slide.StoragePermission -> {
-
-                        }
-                        Slide.Welcome -> {
-                            currentSlideIndex++
-                        }
-                    }
-                },
-                activeSlideNumber = currentSlideIndex + 1,
-                slideCount = slideCount
+                slideState = slideState,
+                onForward = { slideState.nextSlide() },
+                onBack = { slideState.previousSlide() },
+                onFinish = onIntroFinished,
             )
         }
     ) { innerPadding ->
-        when (slides[currentSlideIndex]) {
-            Slide.Welcome -> WelcomeSlide(Modifier.padding(innerPadding))
-            Slide.StoragePermission -> StoragePermissionSlide(Modifier.padding(innerPadding))
-            Slide.IgnoreDozePermission -> IgnoreDozePermissionSlide(Modifier.padding(innerPadding))
-            Slide.LocationPermission -> LocationPermissionSlide(Modifier.padding(innerPadding))
-            Slide.NotificationPermission -> NotificationPermissionSlide(
-                Modifier.padding(
-                    innerPadding
-                )
+        when (slides[slideState.currentSlide - 1]) {
+            Slide.Welcome -> WelcomeSlide(
+                Modifier.padding(innerPadding),
+                slideState = slideState
             )
-
-            Slide.KeyGeneration -> KeyGenerationSlide(Modifier.padding(innerPadding))
+            Slide.StoragePermission -> StoragePermissionSlide(
+                Modifier.padding(innerPadding),
+                slideState = slideState
+            )
+            Slide.IgnoreDozePermission -> IgnoreDozePermissionSlide(
+                Modifier.padding(innerPadding),
+                slideState = slideState
+            )
+            Slide.LocationPermission -> LocationPermissionSlide(
+                Modifier.padding(innerPadding),
+                slideState = slideState
+            )
+            Slide.NotificationPermission -> NotificationPermissionSlide(
+                Modifier.padding(innerPadding),
+                slideState = slideState
+            )
+            Slide.KeyGeneration -> KeyGenerationSlide(
+                Modifier.padding(innerPadding),
+                slideState = slideState
+            )
         }
     }
 }
@@ -93,7 +85,8 @@ private fun FirstStartPreview() {
     SyncthingandroidTheme {
         FirstStartScreen(
             slides = listOf(Slide.Welcome, Slide.StoragePermission, Slide.LocationPermission),
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            onIntroFinished = {}
         )
     }
 }
