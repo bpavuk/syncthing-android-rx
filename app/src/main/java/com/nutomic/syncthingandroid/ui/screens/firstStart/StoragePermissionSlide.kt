@@ -51,7 +51,7 @@ fun StoragePermissionSlide(modifier: Modifier = Modifier, slideState: SlideState
                 val storagePermissionState = rememberPermissionState(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 if (storagePermissionState.status.isGranted) {
                     // All set!
-                    Text("All set!")
+                    Text("Storage access enabled!")
                     slideState.forwardBlocked = false
                 } else {
                     // TODO: use string res
