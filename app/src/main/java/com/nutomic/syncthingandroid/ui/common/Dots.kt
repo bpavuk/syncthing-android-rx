@@ -31,7 +31,7 @@ fun Dots(
                     shape = CircleShape
                 )
         )
-        if (activeDot != dotAmount) {
+        if (currentDot != dotAmount) {
             Spacer(modifier = Modifier.size(size = 8.dp))
         }
     }
