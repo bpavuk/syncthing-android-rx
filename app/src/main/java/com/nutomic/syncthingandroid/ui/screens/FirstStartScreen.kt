@@ -64,8 +64,7 @@ fun FirstStartScreen(
                 slideState = slideState
             )
             Slide.LocationPermission -> LocationPermissionSlide(
-                Modifier.padding(innerPadding).safeContentPadding(),
-                slideState = slideState
+                Modifier.padding(innerPadding).safeContentPadding()
             )
             Slide.NotificationPermission -> NotificationPermissionSlide(
                 Modifier.padding(innerPadding).safeContentPadding(),
