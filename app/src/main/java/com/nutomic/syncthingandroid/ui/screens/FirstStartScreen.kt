@@ -1,5 +1,6 @@
 package com.nutomic.syncthingandroid.ui.screens
 
+import android.app.Application
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.nutomic.syncthingandroid.ui.common.slides.SlidesController
@@ -17,6 +19,7 @@ import com.nutomic.syncthingandroid.ui.screens.firstStart.LocationPermissionSlid
 import com.nutomic.syncthingandroid.ui.screens.firstStart.NotificationPermissionSlide
 import com.nutomic.syncthingandroid.ui.screens.firstStart.StoragePermissionSlide
 import com.nutomic.syncthingandroid.ui.screens.firstStart.WelcomeSlide
+import com.nutomic.syncthingandroid.ui.screens.firstStart.keygen.KeyGenerationViewModelImpl
 import com.nutomic.syncthingandroid.ui.theme.SyncthingandroidTheme
 
 
@@ -71,8 +74,9 @@ fun FirstStartScreen(
                 slideState = slideState
             )
             Slide.KeyGeneration -> KeyGenerationSlide(
+                slideState = slideState,
                 Modifier.padding(innerPadding).safeContentPadding(),
-                slideState = slideState
+                viewModel = KeyGenerationViewModelImpl(LocalContext.current.applicationContext as Application)
             )
         }
     }
