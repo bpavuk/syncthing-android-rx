@@ -1,683 +1,685 @@
-package com.nutomic.syncthingandroid.activities;
+package com.nutomic.syncthingandroid.activities
 
-import android.annotation.SuppressLint;
-import android.app.Dialog;
-import android.content.ComponentName;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.IBinder;
-import android.util.DisplayMetrics;
-import android.util.Log;
-import android.util.TypedValue;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentStatePagerAdapter;
-import androidx.viewpager.widget.ViewPager;
-
-import com.annimon.stream.function.Consumer;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.tabs.TabLayout;
-import com.nutomic.syncthingandroid.R;
-import com.nutomic.syncthingandroid.SyncthingApp;
-import com.nutomic.syncthingandroid.fragments.DeviceListFragment;
-import com.nutomic.syncthingandroid.fragments.DrawerFragment;
-import com.nutomic.syncthingandroid.fragments.FolderListFragment;
-import com.nutomic.syncthingandroid.fragments.StatusFragment;
-import com.nutomic.syncthingandroid.service.AppPrefs;
-import com.nutomic.syncthingandroid.service.Constants;
-import com.nutomic.syncthingandroid.service.RestApi;
-import com.nutomic.syncthingandroid.service.SyncthingService;
-import com.nutomic.syncthingandroid.service.SyncthingServiceBinder;
-import com.nutomic.syncthingandroid.util.PermissionUtil;
-import com.nutomic.syncthingandroid.util.Util;
-
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
-
-import javax.inject.Inject;
-
-import static java.lang.Math.min;
+import android.annotation.SuppressLint
+import android.app.Dialog
+import android.content.ComponentName
+import android.content.DialogInterface
+import android.content.Intent
+import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.content.res.Configuration
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
+import android.os.Build
+import android.os.Bundle
+import android.os.Handler
+import android.os.IBinder
+import android.util.Log
+import android.util.TypedValue
+import android.view.KeyEvent
+import android.view.LayoutInflater
+import android.view.MenuItem
+import android.view.View
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.ProgressBar
+import android.widget.TextView
+import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentStatePagerAdapter
+import androidx.viewpager.widget.ViewPager
+import com.annimon.stream.function.Consumer
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.tabs.TabLayout
+import com.nutomic.syncthingandroid.R
+import com.nutomic.syncthingandroid.SyncthingApp
+import com.nutomic.syncthingandroid.fragments.DeviceListFragment
+import com.nutomic.syncthingandroid.fragments.DrawerFragment
+import com.nutomic.syncthingandroid.fragments.FolderListFragment
+import com.nutomic.syncthingandroid.fragments.StatusFragment
+import com.nutomic.syncthingandroid.service.AppPrefs
+import com.nutomic.syncthingandroid.service.Constants
+import com.nutomic.syncthingandroid.service.RestApi
+import com.nutomic.syncthingandroid.service.SyncthingService
+import com.nutomic.syncthingandroid.service.SyncthingService.OnServiceStateChangeListener
+import com.nutomic.syncthingandroid.service.SyncthingServiceBinder
+import com.nutomic.syncthingandroid.util.PermissionUtil
+import com.nutomic.syncthingandroid.util.Util
+import java.util.Date
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import kotlin.math.min
 
 /**
- * Shows {@link FolderListFragment} and
- * {@link DeviceListFragment} in different tabs, and
- * {@link DrawerFragment} in the navigation drawer.
+ * Shows [FolderListFragment] and
+ * [DeviceListFragment] in different tabs, and
+ * [DrawerFragment] in the navigation drawer.
  */
-public class MainActivity extends SyncthingActivity
-        implements SyncthingService.OnServiceStateChangeListener {
+class MainActivity : SyncthingActivity(), OnServiceStateChangeListener {
+    private var ENABLE_VERBOSE_LOG = false
 
-    private static final String TAG = "MainActivity";
+    private var mQrCodeDialog: AlertDialog? = null
+    private var mUsageReportingDialog: AlertDialog? = null
+    private var mRestartDialog: Dialog? = null
 
-    private Boolean ENABLE_VERBOSE_LOG = false;
+    private var mSyncthingServiceState: SyncthingService.State? = SyncthingService.State.INIT
 
-    private static final String IS_SHOWING_RESTART_DIALOG = "RESTART_DIALOG_STATE";
-    private static final String IS_QRCODE_DIALOG_DISPLAYED = "QRCODE_DIALOG_STATE";
-    private static final String QRCODE_BITMAP_KEY = "QRCODE_BITMAP";
-    private static final String DEVICEID_KEY = "DEVICEID";
+    private var mViewPager: ViewPager? = null
 
-    private static final int FOLDER_FRAGMENT_ID = 0;
-    private static final int DEVICE_FRAGMENT_ID = 1;
-    private static final int STATUS_FRAGMENT_ID = 2;
-    
-    /**
-     * Intent action to exit app.
-     */
-    public static final String ACTION_EXIT =
-            "com.github.catfriend1.syncthingandroid.MainActivity.EXIT";
+    private var mFolderListFragment: FolderListFragment? = null
+    private var mDeviceListFragment: DeviceListFragment? = null
+    private var mStatusFragment: StatusFragment? = null
+    private var mDrawerFragment: DrawerFragment? = null
 
-    /**
-     * Time after first start when usage reporting dialog should be shown.
-     * See {@link #showUsageReportingDialog}
-     */
-    private static final long USAGE_REPORTING_DIALOG_DELAY = TimeUnit.DAYS.toMillis(3);
-    private static final Boolean DEBUG_FORCE_USAGE_REPORTING_DIALOG = false;
+    private var mDrawerToggle: ActionBarDrawerToggle? = null
+    private var mDrawerLayout: DrawerLayout? = null
 
-    private AlertDialog mQrCodeDialog;
-    private AlertDialog mUsageReportingDialog;
-    private Dialog mRestartDialog;
+    private var mLastIntent: Intent? = null
+    private var oneTimeShot = true
 
-    private SyncthingService.State mSyncthingServiceState = SyncthingService.State.INIT;
+    @JvmField
+    @Inject
+    var mPreferences: SharedPreferences? = null
 
-    private ViewPager mViewPager;
+    private val mUIRefreshHandler = Handler()
 
-    private FolderListFragment mFolderListFragment;
-    private DeviceListFragment mDeviceListFragment;
-    private StatusFragment     mStatusFragment;
-    private DrawerFragment     mDrawerFragment;
-
-    private ActionBarDrawerToggle mDrawerToggle;
-    private DrawerLayout          mDrawerLayout;
-
-    private Intent mLastIntent;
-    private Boolean oneTimeShot = true;
-
-    @Inject SharedPreferences mPreferences;
-
-    private final Handler mUIRefreshHandler = new Handler();
-
-    private Runnable mUIRefreshRunnable = new Runnable() {
-        @Override
-        public void run() {
-            onTimerEvent();
-            mUIRefreshHandler.postDelayed(this, Constants.GUI_UPDATE_INTERVAL);
+    private val mUIRefreshRunnable: Runnable = object : Runnable {
+        override fun run() {
+            onTimerEvent()
+            mUIRefreshHandler.postDelayed(this, Constants.GUI_UPDATE_INTERVAL)
         }
-    };
+    }
 
     /**
      * Handles various dialogs based on current state.
      */
-    @Override
-    public void onServiceStateChange(SyncthingService.State currentState) {
-        mSyncthingServiceState = currentState;
+    override fun onServiceStateChange(currentState: SyncthingService.State) {
+        mSyncthingServiceState = currentState
         if (oneTimeShot) {
-            updateViewPager();
-            oneTimeShot = false;
+            updateViewPager()
+            oneTimeShot = false
         }
 
         // Update status light indicating if syncthing is running.
-        Button btnDisabled = (Button) findViewById(R.id.btnDisabled);
-        Button btnStarting = (Button) findViewById(R.id.btnStarting);
-        Button btnActive = (Button) findViewById(R.id.btnActive);
+        val btnDisabled = findViewById<View?>(R.id.btnDisabled) as Button?
+        val btnStarting = findViewById<View?>(R.id.btnStarting) as Button?
+        val btnActive = findViewById<View?>(R.id.btnActive) as Button?
         if (btnDisabled != null && btnStarting != null && btnActive != null) {
-            btnActive.setVisibility(currentState == SyncthingService.State.ACTIVE ? View.VISIBLE : View.GONE);
-            btnStarting.setVisibility(currentState == SyncthingService.State.STARTING ? View.VISIBLE : View.GONE);
-            btnDisabled.setVisibility(currentState != SyncthingService.State.ACTIVE && currentState != SyncthingService.State.STARTING ? View.VISIBLE : View.GONE);
+            btnActive.visibility = if (currentState == SyncthingService.State.ACTIVE) View.VISIBLE else View.GONE
+            btnStarting.visibility = if (currentState == SyncthingService.State.STARTING) View.VISIBLE else View.GONE
+            btnDisabled.visibility = if (currentState != SyncthingService.State.ACTIVE && currentState != SyncthingService.State.STARTING) View.VISIBLE else View.GONE
         }
 
-        switch (currentState) {
-            case ACTIVE:
+        when (currentState) {
+            SyncthingService.State.ACTIVE -> {
                 // Check if the usage reporting minimum delay passed by.
-                Boolean usageReportingDelayPassed = (new Date().getTime() > getFirstStartTime() + USAGE_REPORTING_DIALOG_DELAY);
-                RestApi restApi = getApi();
-                if (        (
-                                DEBUG_FORCE_USAGE_REPORTING_DIALOG
-                            ) || (
-                                usageReportingDelayPassed &&
-                                restApi != null &&
-                                restApi.isConfigLoaded() &&
-                                !restApi.isUsageReportingDecided()
-                            )) {
-                    showUsageReportingDialog(restApi);
+                val usageReportingDelayPassed =
+                    (Date().time > this.firstStartTime + USAGE_REPORTING_DIALOG_DELAY)
+                val restApi = api
+                if (usageReportingDelayPassed && restApi != null &&
+                    restApi.isConfigLoaded && !restApi.isUsageReportingDecided()
+                ) {
+                    showUsageReportingDialog(restApi)
                 }
-                break;
-            case ERROR:
-                finish();
-                break;
+            }
+            SyncthingService.State.ERROR -> finish()
+            else -> {}
         }
-        updateTotalSyncProgressBar();
+        updateTotalSyncProgressBar()
     }
 
-    /**
-     * Returns the unix timestamp at which the app was first installed.
-     */
-    private long getFirstStartTime() {
-        PackageManager pm = getPackageManager();
-        long firstInstallTime = 0;
-        try {
-            firstInstallTime = pm.getPackageInfo(getPackageName(), 0).firstInstallTime;
-        } catch (PackageManager.NameNotFoundException e) {
-            Log.w(TAG, "This should never happen", e);
+    private val firstStartTime: Long
+        /**
+         * Returns the unix timestamp at which the app was first installed.
+         */
+        get() {
+            val pm = packageManager
+            var firstInstallTime: Long = 0
+            try {
+                firstInstallTime = pm.getPackageInfo(packageName, 0).firstInstallTime
+            } catch (e: PackageManager.NameNotFoundException) {
+                Log.w(TAG, "This should never happen", e)
+            }
+            return firstInstallTime
         }
-        return firstInstallTime;
-    }
 
     /**
      * Initializes tab navigation.
      */
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        ((SyncthingApp) getApplication()).component().inject(this);
-        ENABLE_VERBOSE_LOG = AppPrefs.getPrefVerboseLog(mPreferences);
+    public override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        (application as SyncthingApp).component().inject(this)
+        ENABLE_VERBOSE_LOG = AppPrefs.getPrefVerboseLog(mPreferences)
         if (ENABLE_VERBOSE_LOG) {
-            Util.testPathEllipsis();
+            Util.testPathEllipsis()
         }
 
-        setContentView(R.layout.activity_main);
-        mDrawerLayout = findViewById(R.id.drawer_layout);
-        mViewPager = findViewById(R.id.pager);
+        setContentView(R.layout.activity_main)
+        mDrawerLayout = findViewById(R.id.drawer_layout)
+        mViewPager = findViewById(R.id.pager)
 
-        FragmentManager fm = getSupportFragmentManager();
+        val fm = supportFragmentManager
         if (savedInstanceState != null) {
-            mFolderListFragment = (FolderListFragment) fm.getFragment(
-                    savedInstanceState, FolderListFragment.class.getName());
-            mDeviceListFragment = (DeviceListFragment) fm.getFragment(
-                    savedInstanceState, DeviceListFragment.class.getName());
-            mStatusFragment = (StatusFragment) fm.getFragment(
-                    savedInstanceState, StatusFragment.class.getName());
-            mDrawerFragment = (DrawerFragment) fm.getFragment(
-                    savedInstanceState, DrawerFragment.class.getName());
+            mFolderListFragment = fm.getFragment(
+                savedInstanceState, FolderListFragment::class.java.getName()
+            ) as FolderListFragment?
+            mDeviceListFragment = fm.getFragment(
+                savedInstanceState, DeviceListFragment::class.java.getName()
+            ) as DeviceListFragment?
+            mStatusFragment = fm.getFragment(
+                savedInstanceState, StatusFragment::class.java.getName()
+            ) as StatusFragment?
+            mDrawerFragment = fm.getFragment(
+                savedInstanceState, DrawerFragment::class.java.getName()
+            ) as DrawerFragment?
         }
         if (mFolderListFragment == null) {
-            mFolderListFragment = new FolderListFragment();
+            mFolderListFragment = FolderListFragment()
         }
         if (mDeviceListFragment == null) {
-            mDeviceListFragment = new DeviceListFragment();
+            mDeviceListFragment = DeviceListFragment()
         }
         if (mStatusFragment == null) {
-            mStatusFragment = new StatusFragment();
+            mStatusFragment = StatusFragment()
         }
         if (mDrawerFragment == null) {
-            mDrawerFragment = new DrawerFragment();
+            mDrawerFragment = DrawerFragment()
         }
 
         if (savedInstanceState != null) {
-            if (savedInstanceState.getBoolean(IS_SHOWING_RESTART_DIALOG)){
-                showRestartDialog();
+            if (savedInstanceState.getBoolean(IS_SHOWING_RESTART_DIALOG)) {
+                showRestartDialog()
             }
             if (savedInstanceState.getBoolean(IS_QRCODE_DIALOG_DISPLAYED)) {
-                showQrCodeDialog(savedInstanceState.getString(DEVICEID_KEY), savedInstanceState.getParcelable(QRCODE_BITMAP_KEY));
+                showQrCodeDialog(
+                    savedInstanceState.getString(DEVICEID_KEY),
+                    savedInstanceState.getParcelable(
+                        QRCODE_BITMAP_KEY
+                    )
+                )
             }
         }
 
-        fm.beginTransaction().replace(R.id.drawer, mDrawerFragment).commitAllowingStateLoss();
-        mDrawerToggle = new Toggle(this, mDrawerLayout);
-        mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
-        mDrawerLayout.addDrawerListener(mDrawerToggle);
-        setOptimalDrawerWidth(findViewById(R.id.drawer));
+        fm.beginTransaction().replace(R.id.drawer, mDrawerFragment!!).commitAllowingStateLoss()
+        mDrawerToggle = Toggle(this, mDrawerLayout)
+        mDrawerLayout!!.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
+        mDrawerLayout!!.addDrawerListener(mDrawerToggle!!)
+        setOptimalDrawerWidth(findViewById(R.id.drawer))
 
         /**
          * SyncthingService needs to be started from this activity as the user
          * can directly launch this activity from the recent activity switcher.
          */
-        Intent serviceIntent = new Intent(this, SyncthingService.class);
+        val serviceIntent = Intent(this, SyncthingService::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(serviceIntent);
+            startForegroundService(serviceIntent)
         } else {
-            startService(serviceIntent);
+            startService(serviceIntent)
         }
 
-        onNewIntent(getIntent());
+        onNewIntent(intent)
     }
-    
-    
-    @Override
-    protected void onNewIntent(Intent intent) {
-        mLastIntent = intent;
-        super.onNewIntent(intent);
-    };
+
+
+    override fun onNewIntent(intent: Intent) {
+        mLastIntent = intent
+        super.onNewIntent(intent)
+    }
 
 
     /**
      * Updates the ViewPager to show tabs depending on the service state.
      */
-    private void updateViewPager() {
-        final int numPages = 3;
-        FragmentStatePagerAdapter mSectionsPagerAdapter =
-                new FragmentStatePagerAdapter(getSupportFragmentManager()) {
+    private fun updateViewPager() {
+        val numPages = 3
+        val mSectionsPagerAdapter: FragmentStatePagerAdapter =
+            object : FragmentStatePagerAdapter(supportFragmentManager) {
+                override fun getItem(position: Int): Fragment {
+                    return when (position) {
+                        FOLDER_FRAGMENT_ID -> mFolderListFragment!!
+                        DEVICE_FRAGMENT_ID -> mDeviceListFragment!!
+                        STATUS_FRAGMENT_ID -> mStatusFragment!!
+                        else -> throw IllegalStateException("No fragment can be retrieved")
+                    }
+                }
 
-            @Override
-            public Fragment getItem(int position) {
-                switch (position) {
-                    case FOLDER_FRAGMENT_ID:
-                        return mFolderListFragment;
-                    case DEVICE_FRAGMENT_ID:
-                        return mDeviceListFragment;
-                    case STATUS_FRAGMENT_ID:
-                        return mStatusFragment;
-                    default:
-                        return null;
+                override fun getItemPosition(`object`: Any): Int {
+                    return POSITION_NONE
+                }
+
+                override fun getCount(): Int {
+                    return numPages
+                }
+
+                override fun getPageTitle(position: Int): CharSequence? {
+                    return when (position) {
+                        FOLDER_FRAGMENT_ID -> getResources().getString(R.string.folders_fragment_title)
+                        DEVICE_FRAGMENT_ID -> getResources().getString(R.string.devices_fragment_title)
+                        STATUS_FRAGMENT_ID -> getResources().getString(R.string.status_fragment_title)
+                        else -> position.toString()
+                    }
                 }
             }
-
-            @Override
-            public int getItemPosition(Object object) {
-                return this.POSITION_NONE;
-            }
-
-            @Override
-            public int getCount() {
-                return numPages;
-            }
-
-            @Override
-            public CharSequence getPageTitle(int position) {
-                switch (position) {
-                    case FOLDER_FRAGMENT_ID:
-                        return getResources().getString(R.string.folders_fragment_title);
-                    case DEVICE_FRAGMENT_ID:
-                        return getResources().getString(R.string.devices_fragment_title);
-                    case STATUS_FRAGMENT_ID:
-                        return getResources().getString(R.string.status_fragment_title);
-                    default:
-                        return String.valueOf(position);
-                }
-            }
-        };
         try {
-            mViewPager.setAdapter(mSectionsPagerAdapter);
+            mViewPager!!.setAdapter(mSectionsPagerAdapter)
             /**
              * See issues #321, #327
              * Call stack on IllegalStateException: onServiceStateChange/updateViewPager/setOffscreenPageLimit
              */
             // mViewPager.setOffscreenPageLimit(numPages);
-        } catch (IllegalStateException e) {
+        } catch (e: IllegalStateException) {
             /**
              * IllegalStateException happens due to a bug in FragmentStatePagerAdapter.
              * For more information see:
              * - https://github.com/Catfriend1/syncthing-android/issues/108
              * - https://issuetracker.google.com/issues/36956111
              */
-            Log.e(TAG, "updateViewPager: IllegalStateException in setAdapter.", e);
-            new AlertDialog.Builder(this)
-                    .setMessage(getString(R.string.exception_known_bug_notice, getString(R.string.issue_tracker_url), "108"))
-                    .setCancelable(false)
-                    .setPositiveButton(android.R.string.ok, (dialog, which) -> {})
-                    .show();
+            Log.e(TAG, "updateViewPager: IllegalStateException in setAdapter.", e)
+            AlertDialog.Builder(this)
+                .setMessage(
+                    getString(
+                        R.string.exception_known_bug_notice,
+                        getString(R.string.issue_tracker_url),
+                        "108"
+                    )
+                )
+                .setCancelable(false)
+                .setPositiveButton(
+                    android.R.string.ok
+                ) { dialog: DialogInterface?, which: Int -> }
+                .show()
         }
-        TabLayout tabLayout = findViewById(R.id.tabContainer);
-        tabLayout.setupWithViewPager(mViewPager);
+        val tabLayout = findViewById<TabLayout>(R.id.tabContainer)
+        tabLayout.setupWithViewPager(mViewPager)
     }
 
-    @Override
-    public void onPause() {
-        stopUIRefreshHandler();
-        super.onPause();
+    public override fun onPause() {
+        stopUIRefreshHandler()
+        super.onPause()
     }
 
-    @Override
-    public void onResume() {
+    public override fun onResume() {
         // Check if storage permission has been revoked at runtime.
         if (!PermissionUtil.haveStoragePermission(this)) {
-            startActivity(new Intent(this, FirstStartComposeActivity.class));
-            this.finish();
-            super.onResume();
-            return;
+            startActivity(Intent(this, FirstStartComposeActivity::class.java))
+            this.finish()
+            super.onResume()
+            return
         }
 
         // Evaluate run conditions to detect changes made to the metered wifi flags.
-        SyncthingService mSyncthingService = getService();
-        if (mSyncthingService != null) {
-            mSyncthingService.evaluateRunConditions();
-        }
+        val mSyncthingService = service
+        mSyncthingService?.evaluateRunConditions()
 
-        startUIRefreshHandler();
+        startUIRefreshHandler()
 
-        String action = mLastIntent.getAction();
+        val action = mLastIntent!!.action
         if (action != null) {
-            if (ACTION_EXIT.equals(action)) {
-                Log.i(TAG, "Exit app requested by notification action");
-                stopService(new Intent(this, SyncthingService.class));
-                finishAndRemoveTask();
+            if (ACTION_EXIT == action) {
+                Log.i(TAG, "Exit app requested by notification action")
+                stopService(Intent(this, SyncthingService::class.java))
+                finishAndRemoveTask()
             }
         }
-        
-        super.onResume();
+
+        super.onResume()
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        SyncthingService mSyncthingService = getService();
+    public override fun onDestroy() {
+        super.onDestroy()
+        val mSyncthingService = service
         if (mSyncthingService != null) {
-            mSyncthingService.unregisterOnServiceStateChangeListener(this);
-            mSyncthingService.unregisterOnServiceStateChangeListener(mDrawerFragment);
-            mSyncthingService.unregisterOnServiceStateChangeListener(mFolderListFragment);
-            mSyncthingService.unregisterOnServiceStateChangeListener(mDeviceListFragment);
-            mSyncthingService.unregisterOnServiceStateChangeListener(mStatusFragment);
+            mSyncthingService.unregisterOnServiceStateChangeListener(this)
+            mSyncthingService.unregisterOnServiceStateChangeListener(mDrawerFragment)
+            mSyncthingService.unregisterOnServiceStateChangeListener(mFolderListFragment)
+            mSyncthingService.unregisterOnServiceStateChangeListener(mDeviceListFragment)
+            mSyncthingService.unregisterOnServiceStateChangeListener(mStatusFragment)
         }
     }
 
-    @Override
-    public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-        super.onServiceConnected(componentName, iBinder);
-        SyncthingServiceBinder syncthingServiceBinder = (SyncthingServiceBinder) iBinder;
-        SyncthingService syncthingService = syncthingServiceBinder.getService();
-        syncthingService.registerOnServiceStateChangeListener(this);
-        syncthingService.registerOnServiceStateChangeListener(mDrawerFragment);
-        syncthingService.registerOnServiceStateChangeListener(mFolderListFragment);
-        syncthingService.registerOnServiceStateChangeListener(mDeviceListFragment);
-        syncthingService.registerOnServiceStateChangeListener(mStatusFragment);
+    override fun onServiceConnected(componentName: ComponentName?, iBinder: IBinder?) {
+        super.onServiceConnected(componentName, iBinder)
+        val syncthingServiceBinder = iBinder as SyncthingServiceBinder
+        val syncthingService = syncthingServiceBinder.service
+        syncthingService.registerOnServiceStateChangeListener(this)
+        syncthingService.registerOnServiceStateChangeListener(mDrawerFragment)
+        syncthingService.registerOnServiceStateChangeListener(mFolderListFragment)
+        syncthingService.registerOnServiceStateChangeListener(mDeviceListFragment)
+        syncthingService.registerOnServiceStateChangeListener(mStatusFragment)
     }
 
     /**
      * Saves current tab index and fragment states.
      */
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
 
-        FragmentManager fm = getSupportFragmentManager();
-        fm.executePendingTransactions();
-        Consumer<Fragment> putFragment = fragment -> {
-            if (fragment != null && fragment.isAdded()) {
-                fm.putFragment(outState, fragment.getClass().getName(), fragment);
+        val fm = supportFragmentManager
+        fm.executePendingTransactions()
+        val putFragment = Consumer { fragment: Fragment? ->
+            if (fragment != null && fragment.isAdded) {
+                fm.putFragment(outState, fragment.javaClass.getName(), fragment)
             }
-        };
-        putFragment.accept(mFolderListFragment);
-        putFragment.accept(mDeviceListFragment);
-        putFragment.accept(mStatusFragment);
-
-        outState.putBoolean(IS_SHOWING_RESTART_DIALOG, mRestartDialog != null && mRestartDialog.isShowing());
-        if (mQrCodeDialog != null && mQrCodeDialog.isShowing()) {
-            outState.putBoolean(IS_QRCODE_DIALOG_DISPLAYED, true);
-            ImageView qrCode = mQrCodeDialog.findViewById(R.id.qrcode_image_view);
-            TextView deviceID = mQrCodeDialog.findViewById(R.id.device_id);
-            outState.putParcelable(QRCODE_BITMAP_KEY, ((BitmapDrawable) qrCode.getDrawable()).getBitmap());
-            outState.putString(DEVICEID_KEY, deviceID.getText().toString());
         }
-        Util.dismissDialogSafe(mRestartDialog, this);
-        Util.dismissDialogSafe(mUsageReportingDialog, this);
+        putFragment.accept(mFolderListFragment)
+        putFragment.accept(mDeviceListFragment)
+        putFragment.accept(mStatusFragment)
+
+        outState.putBoolean(
+            IS_SHOWING_RESTART_DIALOG,
+            mRestartDialog != null && mRestartDialog!!.isShowing
+        )
+        if (mQrCodeDialog != null && mQrCodeDialog!!.isShowing) {
+            outState.putBoolean(IS_QRCODE_DIALOG_DISPLAYED, true)
+            val qrCode = mQrCodeDialog!!.findViewById<ImageView?>(R.id.qrcode_image_view)
+            val deviceID = mQrCodeDialog!!.findViewById<TextView?>(R.id.device_id)
+            outState.putParcelable(
+                QRCODE_BITMAP_KEY,
+                (qrCode!!.getDrawable() as BitmapDrawable).bitmap
+            )
+            outState.putString(DEVICEID_KEY, deviceID!!.getText().toString())
+        }
+        Util.dismissDialogSafe(mRestartDialog, this)
+        Util.dismissDialogSafe(mUsageReportingDialog, this)
     }
 
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
+    override fun onPostCreate(savedInstanceState: Bundle?) {
+        super.onPostCreate(savedInstanceState)
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        val toolbar = findViewById<View?>(R.id.toolbar) as Toolbar?
         if (toolbar != null) {
-            toolbar.setNavigationIcon(R.drawable.btn_menu);
-            toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        mDrawerLayout.openDrawer(GravityCompat.START);
-                    }
-            });
+            toolbar.setNavigationIcon(R.drawable.btn_menu)
+            toolbar.setNavigationOnClickListener { mDrawerLayout!!.openDrawer(GravityCompat.START) }
         }
 
-        mDrawerToggle.syncState();
+        mDrawerToggle!!.syncState()
 
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setHomeButtonEnabled(true);
+        val actionBar = supportActionBar
+        actionBar?.setHomeButtonEnabled(true)
+
+        val bottomNavigationView =
+            findViewById<View?>(R.id.bottom_navigation_view) as BottomNavigationView
+        bottomNavigationView.setOnNavigationItemSelectedListener { item ->
+//            if (item.itemId == R.id.bottom_navigation_item_rescan_all) {
+//                 rescanAll();
+//            }
+            true
         }
-
-        BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation_view);
-        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-                @Override
-                public boolean onNavigationItemSelected(MenuItem item) {
-                    if (item.getItemId() == R.id.bottom_navigation_item_rescan_all) {
-                        // rescanAll();
-                    }
-                    return true;
-                }
-        });
     }
 
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        mDrawerToggle.onConfigurationChanged(newConfig);
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        mDrawerToggle!!.onConfigurationChanged(newConfig)
     }
 
-    private void startUIRefreshHandler() {
-        LogV("startUIRefreshHandler");
-        mUIRefreshHandler.removeCallbacks(mUIRefreshRunnable);
-        mUIRefreshHandler.post(mUIRefreshRunnable);
+    private fun startUIRefreshHandler() {
+        LogV("startUIRefreshHandler")
+        mUIRefreshHandler.removeCallbacks(mUIRefreshRunnable)
+        mUIRefreshHandler.post(mUIRefreshRunnable)
     }
 
-    private void stopUIRefreshHandler() {
-        LogV("stopUIRefreshHandler");
-        mUIRefreshHandler.removeCallbacks(mUIRefreshRunnable);
+    private fun stopUIRefreshHandler() {
+        LogV("stopUIRefreshHandler")
+        mUIRefreshHandler.removeCallbacks(mUIRefreshRunnable)
     }
 
-    public void showRestartDialog(){
-        mRestartDialog = new AlertDialog.Builder(this)
-                .setMessage(R.string.dialog_confirm_restart)
-                .setPositiveButton(android.R.string.yes, (dialogInterface, i1) -> this.startService(new Intent(this, SyncthingService.class)
-                        .setAction(SyncthingService.ACTION_RESTART)))
-                .setNegativeButton(android.R.string.no, null)
-                .create();
-        mRestartDialog.show();
+    fun showRestartDialog() {
+        mRestartDialog = AlertDialog.Builder(this)
+            .setMessage(R.string.dialog_confirm_restart)
+            .setPositiveButton(
+                android.R.string.yes
+            ) { dialogInterface: DialogInterface?, i1: Int ->
+                this.startService(
+                    Intent(this, SyncthingService::class.java)
+                        .setAction(SyncthingService.ACTION_RESTART)
+                )
+            }
+            .setNegativeButton(android.R.string.no, null)
+            .create()
+        mRestartDialog!!.show()
     }
 
-    public void showQrCodeDialog(String deviceId, Bitmap qrCode) {
-        @SuppressLint("InflateParams")
-        View qrCodeDialogView = this.getLayoutInflater().inflate(R.layout.dialog_qrcode, null);
-        TextView deviceIdTextView = qrCodeDialogView.findViewById(R.id.device_id);
-        TextView shareDeviceIdTextView = qrCodeDialogView.findViewById(R.id.actionShareId);
-        ImageView qrCodeImageView = qrCodeDialogView.findViewById(R.id.qrcode_image_view);
+    fun showQrCodeDialog(deviceId: String?, qrCode: Bitmap?) {
+        @SuppressLint("InflateParams") val qrCodeDialogView =
+            this.layoutInflater.inflate(R.layout.dialog_qrcode, null)
+        val deviceIdTextView = qrCodeDialogView.findViewById<TextView>(R.id.device_id)
+        val shareDeviceIdTextView = qrCodeDialogView.findViewById<TextView>(R.id.actionShareId)
+        val qrCodeImageView = qrCodeDialogView.findViewById<ImageView>(R.id.qrcode_image_view)
 
-        deviceIdTextView.setText(deviceId);
-        deviceIdTextView.setOnClickListener(v -> Util.copyDeviceId(this, deviceIdTextView.getText().toString()));
-        shareDeviceIdTextView.setOnClickListener(v -> shareDeviceId(deviceId));
-        qrCodeImageView.setImageBitmap(qrCode);
+        deviceIdTextView.text = deviceId
+        deviceIdTextView.setOnClickListener { v: View? ->
+            Util.copyDeviceId(
+                this,
+                deviceIdTextView.getText().toString()
+            )
+        }
+        shareDeviceIdTextView.setOnClickListener { v: View? ->
+            shareDeviceId(
+                deviceId
+            )
+        }
+        qrCodeImageView.setImageBitmap(qrCode)
 
-        mQrCodeDialog = new AlertDialog.Builder(this)
-                .setTitle(R.string.device_id)
-                .setView(qrCodeDialogView)
-                .setPositiveButton(R.string.finish, null)
-                .create();
+        mQrCodeDialog = AlertDialog.Builder(this)
+            .setTitle(R.string.device_id)
+            .setView(qrCodeDialogView)
+            .setPositiveButton(R.string.finish, null)
+            .create()
 
-        mQrCodeDialog.show();
+        mQrCodeDialog!!.show()
     }
 
-    private void shareDeviceId(String deviceId) {
-        Intent shareIntent = new Intent(android.content.Intent.ACTION_SEND);
-        shareIntent.setType("text/plain");
-        shareIntent.putExtra(android.content.Intent.EXTRA_TEXT, deviceId);
-        startActivity(Intent.createChooser(shareIntent, getString(R.string.share_device_id_chooser)));
+    private fun shareDeviceId(deviceId: String?) {
+        val shareIntent = Intent(Intent.ACTION_SEND)
+        shareIntent.setType("text/plain")
+        shareIntent.putExtra(Intent.EXTRA_TEXT, deviceId)
+        startActivity(
+            Intent.createChooser(
+                shareIntent,
+                getString(R.string.share_device_id_chooser)
+            )
+        )
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        return mDrawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return mDrawerToggle!!.onOptionsItemSelected(item) || super.onOptionsItemSelected(item)
     }
 
     /**
      * Handles drawer opened and closed events, toggling option menu state.
      */
-    private class Toggle extends ActionBarDrawerToggle {
-        public Toggle(AppCompatActivity activity, DrawerLayout drawerLayout) {
-            super(activity, drawerLayout, R.string.open_main_menu, R.string.close_main_menu);
-            setDrawerIndicatorEnabled(false);
+    private inner class Toggle(activity: AppCompatActivity?, drawerLayout: DrawerLayout?) :
+        ActionBarDrawerToggle(
+            activity,
+            drawerLayout,
+            R.string.open_main_menu,
+            R.string.close_main_menu
+        ) {
+        init {
+            isDrawerIndicatorEnabled = false
         }
 
-        @Override
-        public void onDrawerSlide(View drawerView, float slideOffset) {
-            super.onDrawerSlide(drawerView, 0);
+        override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
+            super.onDrawerSlide(drawerView, 0f)
         }
     }
 
     /**
      * Closes the drawer. Use when navigating away from activity.
      */
-    public void closeDrawer() {
-        mDrawerLayout.closeDrawer(GravityCompat.START);
+    fun closeDrawer() {
+        mDrawerLayout!!.closeDrawer(GravityCompat.START)
     }
 
     /**
      * Toggles the drawer on menu button press.
      */
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent e) {
+    override fun onKeyDown(keyCode: Int, e: KeyEvent?): Boolean {
         if (keyCode == KeyEvent.KEYCODE_MENU) {
-            if (!mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
-                mDrawerLayout.openDrawer(GravityCompat.START);
+            if (!mDrawerLayout!!.isDrawerOpen(GravityCompat.START)) {
+                mDrawerLayout!!.openDrawer(GravityCompat.START)
             } else {
-                closeDrawer();
+                closeDrawer()
             }
-            return true;
-        } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
-            closeDrawer();
-            return true;
+            return true
+        } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && mDrawerLayout!!.isDrawerOpen(
+                GravityCompat.START
+            )
+        ) {
+            closeDrawer()
+            return true
         }
-        return super.onKeyDown(keyCode, e);
+        return super.onKeyDown(keyCode, e)
     }
 
-    @Override
-    public void onBackPressed() {
-        if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+    override fun onBackPressed() {
+        if (mDrawerLayout!!.isDrawerOpen(GravityCompat.START)) {
             // Close drawer on back button press.
-            closeDrawer();
+            closeDrawer()
         } else {
             /**
              * Leave MainActivity in its state as the home button was pressed.
              * This will avoid waiting for the loading spinner when getting back
              * and give changes to do UI updates based on EventProcessor in the future.
              */
-            moveTaskToBack(true);
+            moveTaskToBack(true)
         }
-        super.onBackPressed();
+        super.onBackPressed()
     }
 
     /**
      * Calculating width based on
      * http://www.google.com/design/spec/patterns/navigation-drawer.html#navigation-drawer-specs.
      */
-    private void setOptimalDrawerWidth(View drawerContainer) {
-        int actionBarSize = 0;
-        TypedValue tv = new TypedValue();
+    private fun setOptimalDrawerWidth(drawerContainer: View) {
+        var actionBarSize = 0
+        val tv = TypedValue()
         if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
-            actionBarSize = TypedValue.complexToDimensionPixelSize(tv.data,getResources().getDisplayMetrics());
+            actionBarSize =
+                TypedValue.complexToDimensionPixelSize(tv.data, getResources().displayMetrics)
         }
 
-        ViewGroup.LayoutParams params = drawerContainer.getLayoutParams();
-        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
-        int minScreenWidth = min(displayMetrics.widthPixels, displayMetrics.heightPixels);
+        val params = drawerContainer.layoutParams
+        val displayMetrics = getResources().displayMetrics
+        val minScreenWidth = min(displayMetrics.widthPixels, displayMetrics.heightPixels)
 
-        params.width = min(minScreenWidth - actionBarSize, 5 * actionBarSize);
-        drawerContainer.requestLayout();
+        params.width = min(minScreenWidth - actionBarSize, 5 * actionBarSize)
+        drawerContainer.requestLayout()
     }
 
     /**
      * Displays dialog asking user to accept/deny usage reporting.
      */
-    private void showUsageReportingDialog(RestApi restApi) {
-        Log.v(TAG, "showUsageReportingDialog triggered.");
-        final DialogInterface.OnClickListener listener = (dialog, which) -> {
+    private fun showUsageReportingDialog(restApi: RestApi) {
+        Log.v(TAG, "showUsageReportingDialog triggered.")
+        val listener = DialogInterface.OnClickListener { dialog: DialogInterface?, which: Int ->
             try {
-                switch (which) {
-                    case DialogInterface.BUTTON_POSITIVE:
-                        restApi.setUsageReporting(true);
-                        restApi.sendConfig();
-                        break;
-                    case DialogInterface.BUTTON_NEGATIVE:
-                        restApi.setUsageReporting(false);
-                        restApi.sendConfig();
-                        break;
-                    case DialogInterface.BUTTON_NEUTRAL:
-                        final Intent intent = new Intent(MainActivity.this, WebViewActivity.class);
-                        intent.putExtra(WebViewActivity.EXTRA_WEB_URL, getString(R.string.syncthing_usage_stats_url));
-                        startActivity(intent);
-                        break;
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "showUsageReportingDialog:OnClickListener", e);
-            }
-        };
+                when (which) {
+                    DialogInterface.BUTTON_POSITIVE -> {
+                        restApi.setUsageReporting(true)
+                        restApi.sendConfig()
+                    }
 
-        restApi.getUsageReport(report -> {
-            @SuppressLint("InflateParams")
-            View v = LayoutInflater.from(MainActivity.this)
-                    .inflate(R.layout.dialog_usage_reporting, null);
-            TextView tv = v.findViewById(R.id.example);
-            tv.setText(report);
-            Util.dismissDialogSafe(mUsageReportingDialog, MainActivity.this);
-            mUsageReportingDialog = new AlertDialog.Builder(MainActivity.this)
-                    .setTitle(R.string.usage_reporting_dialog_title)
-                    .setView(v)
-                    .setPositiveButton(R.string.yes, listener)
-                    .setNegativeButton(R.string.no, listener)
-                    .setNeutralButton(R.string.open_website, listener)
-                    .show();
-        });
+                    DialogInterface.BUTTON_NEGATIVE -> {
+                        restApi.setUsageReporting(false)
+                        restApi.sendConfig()
+                    }
+
+                    DialogInterface.BUTTON_NEUTRAL -> {
+                        val intent = Intent(this@MainActivity, WebViewActivity::class.java)
+                        intent.putExtra(
+                            WebViewActivity.EXTRA_WEB_URL,
+                            getString(R.string.syncthing_usage_stats_url)
+                        )
+                        startActivity(intent)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "showUsageReportingDialog:OnClickListener", e)
+            }
+        }
+
+        restApi.getUsageReport { report: String? ->
+            @SuppressLint("InflateParams") val v = LayoutInflater.from(this@MainActivity)
+                .inflate(R.layout.dialog_usage_reporting, null)
+            val tv = v.findViewById<TextView>(R.id.example)
+            tv.text = report
+            Util.dismissDialogSafe(mUsageReportingDialog, this@MainActivity)
+            mUsageReportingDialog = AlertDialog.Builder(this@MainActivity)
+                .setTitle(R.string.usage_reporting_dialog_title)
+                .setView(v)
+                .setPositiveButton(R.string.yes, listener)
+                .setNegativeButton(R.string.no, listener)
+                .setNeutralButton(R.string.open_website, listener)
+                .show()
+        }
     }
 
     // The timer is periodically triggering while the user is looking at the UI.
-    private void onTimerEvent() {
-        updateTotalSyncProgressBar();
+    private fun onTimerEvent() {
+        updateTotalSyncProgressBar()
     }
 
     @SuppressLint("SetTextI18n")
-    private void updateTotalSyncProgressBar() {
-        View topRelTotalSyncProgress = (View) findViewById(R.id.topRelTotalSyncProgress);
-        ProgressBar pbTotalSyncComplete = (ProgressBar) findViewById(R.id.pbTotalSyncComplete);
-        TextView tvTotalSyncComplete = (TextView) findViewById(R.id.tvTotalSyncComplete);
-        if (topRelTotalSyncProgress == null ||
-                pbTotalSyncComplete == null ||
-                tvTotalSyncComplete == null) {
-            return;
+    private fun updateTotalSyncProgressBar() {
+        val topRelTotalSyncProgress: View? = findViewById(R.id.topRelTotalSyncProgress)
+        val pbTotalSyncComplete = findViewById<View?>(R.id.pbTotalSyncComplete) as ProgressBar?
+        val tvTotalSyncComplete = findViewById<View?>(R.id.tvTotalSyncComplete) as TextView?
+        if (topRelTotalSyncProgress == null || pbTotalSyncComplete == null || tvTotalSyncComplete == null) {
+            return
         }
 
-        RestApi restApi = getApi();
-        if (restApi == null || !restApi.isConfigLoaded()) {
-            topRelTotalSyncProgress.setVisibility(View.GONE);
-            return;
+        val restApi = api
+        if (restApi == null || !restApi.isConfigLoaded) {
+            topRelTotalSyncProgress.visibility = View.GONE
+            return
         }
 
-        int totalSyncCompletePercent = restApi.getTotalSyncCompletion();
-        Boolean showTotalSyncProgress = (
-                (mSyncthingServiceState == SyncthingService.State.ACTIVE) &&
+        val totalSyncCompletePercent = restApi.getTotalSyncCompletion()
+        val showTotalSyncProgress = ((mSyncthingServiceState == SyncthingService.State.ACTIVE) &&
                 (totalSyncCompletePercent != -1)
-        );
+                )
         if (!showTotalSyncProgress) {
-            topRelTotalSyncProgress.setVisibility(View.GONE);
-            return;
+            topRelTotalSyncProgress.visibility = View.GONE
+            return
         }
-        topRelTotalSyncProgress.setVisibility(View.VISIBLE);
-        pbTotalSyncComplete.setProgress(totalSyncCompletePercent);
-        tvTotalSyncComplete.setText(Integer.toString(totalSyncCompletePercent));
+        topRelTotalSyncProgress.visibility = View.VISIBLE
+        pbTotalSyncComplete.progress = totalSyncCompletePercent
+        tvTotalSyncComplete.text = totalSyncCompletePercent.toString()
     }
 
-    private void LogV(String logMessage) {
+    private fun LogV(logMessage: String) {
         if (ENABLE_VERBOSE_LOG) {
-            Log.v(TAG, logMessage);
+            Log.v(TAG, logMessage)
         }
     }
 
+    companion object {
+        private const val TAG = "MainActivity"
+
+        private const val IS_SHOWING_RESTART_DIALOG = "RESTART_DIALOG_STATE"
+        private const val IS_QRCODE_DIALOG_DISPLAYED = "QRCODE_DIALOG_STATE"
+        private const val QRCODE_BITMAP_KEY = "QRCODE_BITMAP"
+        private const val DEVICEID_KEY = "DEVICEID"
+
+        private const val FOLDER_FRAGMENT_ID = 0
+        private const val DEVICE_FRAGMENT_ID = 1
+        private const val STATUS_FRAGMENT_ID = 2
+
+        /**
+         * Intent action to exit app.
+         */
+        const val ACTION_EXIT: String = "com.github.catfriend1.syncthingandroid.MainActivity.EXIT"
+
+        /**
+         * Time after first start when usage reporting dialog should be shown.
+         * See [.showUsageReportingDialog]
+         */
+        private val USAGE_REPORTING_DIALOG_DELAY = TimeUnit.DAYS.toMillis(3)
+    }
 }
