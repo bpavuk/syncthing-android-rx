@@ -1,140 +1,126 @@
-package com.nutomic.syncthingandroid.fragments;
+package com.nutomic.syncthingandroid.fragments
 
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.os.Handler;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.ListFragment;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
-
-import com.nutomic.syncthingandroid.R;
-import com.nutomic.syncthingandroid.SyncthingApp;
-import com.nutomic.syncthingandroid.activities.FolderActivity;
-import com.nutomic.syncthingandroid.activities.MainActivity;
-import com.nutomic.syncthingandroid.activities.SyncthingActivity;
-import com.nutomic.syncthingandroid.model.Folder;
-import com.nutomic.syncthingandroid.service.AppPrefs;
-import com.nutomic.syncthingandroid.service.Constants;
-import com.nutomic.syncthingandroid.service.RestApi;
-import com.nutomic.syncthingandroid.service.SyncthingService;
-import com.nutomic.syncthingandroid.util.ConfigRouter;
-import com.nutomic.syncthingandroid.util.ConfigXml.OpenConfigException;
-import com.nutomic.syncthingandroid.views.FoldersAdapter;
-
-import java.util.List;
-
-import javax.inject.Inject;
+import android.content.Intent
+import android.content.SharedPreferences
+import android.os.Bundle
+import android.os.Handler
+import android.util.Log
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.widget.AdapterView
+import android.widget.AdapterView.OnItemClickListener
+import androidx.fragment.app.ListFragment
+import com.nutomic.syncthingandroid.R
+import com.nutomic.syncthingandroid.SyncthingApp
+import com.nutomic.syncthingandroid.activities.FolderActivity
+import com.nutomic.syncthingandroid.activities.MainActivity
+import com.nutomic.syncthingandroid.activities.SyncthingActivity
+import com.nutomic.syncthingandroid.model.Folder
+import com.nutomic.syncthingandroid.service.AppPrefs
+import com.nutomic.syncthingandroid.service.Constants
+import com.nutomic.syncthingandroid.service.SyncthingService
+import com.nutomic.syncthingandroid.service.SyncthingService.OnServiceStateChangeListener
+import com.nutomic.syncthingandroid.util.ConfigRouter
+import com.nutomic.syncthingandroid.util.ConfigXml.OpenConfigException
+import com.nutomic.syncthingandroid.views.FoldersAdapter
+import javax.inject.Inject
 
 /**
  * Displays a list of all existing folders.
  */
-public class FolderListFragment extends ListFragment implements SyncthingService.OnServiceStateChangeListener,
-        AdapterView.OnItemClickListener {
+class FolderListFragment : ListFragment(), OnServiceStateChangeListener, OnItemClickListener {
+    private val ENABLE_DEBUG_LOG = false
+    private var ENABLE_VERBOSE_LOG = false
 
-    private static final String TAG = "FolderListFragment";
+    private var mConfigRouter: ConfigRouter? = null
 
-    private Boolean ENABLE_DEBUG_LOG = false;
-    private Boolean ENABLE_VERBOSE_LOG = false;
+    @JvmField
+    @Inject
+    var mPreferences: SharedPreferences? = null
 
-    private ConfigRouter mConfigRouter = null;
-
-    @Inject SharedPreferences mPreferences;
-
-    private Runnable mUpdateListRunnable = new Runnable() {
-        @Override
-        public void run() {
-            onTimerEvent();
-            mUpdateListHandler.postDelayed(this, Constants.GUI_UPDATE_INTERVAL);
+    private val mUpdateListRunnable: Runnable = object : Runnable {
+        override fun run() {
+            onTimerEvent()
+            mUpdateListHandler.postDelayed(this, Constants.GUI_UPDATE_INTERVAL)
         }
-    };
-
-    private final Handler mUpdateListHandler = new Handler();
-    private Boolean mLastVisibleToUser = false;
-    private FoldersAdapter mAdapter;
-    private SyncthingService.State mServiceState = SyncthingService.State.INIT;
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        ((SyncthingApp) getActivity().getApplication()).component().inject(this);
-        ENABLE_VERBOSE_LOG = AppPrefs.getPrefVerboseLog(mPreferences);
     }
 
-    @Override
-    public void setUserVisibleHint(boolean isVisibleToUser)
-    {
-        super.setUserVisibleHint(isVisibleToUser);
+    private val mUpdateListHandler = Handler()
+    private var mLastVisibleToUser = false
+    private var mAdapter: FoldersAdapter? = null
+    private var mServiceState: SyncthingService.State? = SyncthingService.State.INIT
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        (requireActivity().application as SyncthingApp).component().inject(this)
+        ENABLE_VERBOSE_LOG = AppPrefs.getPrefVerboseLog(mPreferences)
+    }
+
+    override fun setUserVisibleHint(isVisibleToUser: Boolean) {
+        super.setUserVisibleHint(isVisibleToUser)
         if (isVisibleToUser) {
             // User switched to the current tab, start handler.
-            startUpdateListHandler();
+            startUpdateListHandler()
         } else {
             // User switched away to another tab, stop handler.
-            stopUpdateListHandler();
+            stopUpdateListHandler()
         }
-        mLastVisibleToUser = isVisibleToUser;
+        mLastVisibleToUser = isVisibleToUser
     }
 
-    @Override
-    public void onPause() {
-        stopUpdateListHandler();
-        super.onPause();
+    override fun onPause() {
+        stopUpdateListHandler()
+        super.onPause()
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
+    override fun onResume() {
+        super.onResume()
         if (mLastVisibleToUser) {
-            startUpdateListHandler();
+            startUpdateListHandler()
         }
     }
 
-    private void startUpdateListHandler() {
-        LogV("startUpdateListHandler");
-        mUpdateListHandler.removeCallbacks(mUpdateListRunnable);
-        mUpdateListHandler.post(mUpdateListRunnable);
+    private fun startUpdateListHandler() {
+        LogV("startUpdateListHandler")
+        mUpdateListHandler.removeCallbacks(mUpdateListRunnable)
+        mUpdateListHandler.post(mUpdateListRunnable)
     }
 
-    private void stopUpdateListHandler() {
-        LogV("stopUpdateListHandler");
-        mUpdateListHandler.removeCallbacks(mUpdateListRunnable);
+    private fun stopUpdateListHandler() {
+        LogV("stopUpdateListHandler")
+        mUpdateListHandler.removeCallbacks(mUpdateListRunnable)
     }
 
-    @Override
-    public void onServiceStateChange(SyncthingService.State currentState) {
-        mServiceState = currentState;
+    override fun onServiceStateChange(currentState: SyncthingService.State?) {
+        mServiceState = currentState
     }
 
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        setHasOptionsMenu(true);
-        setEmptyText(getString(R.string.folder_list_empty));
-        getListView().setOnItemClickListener(this);
+        setHasOptionsMenu(true)
+        setEmptyText(getString(R.string.folder_list_empty))
+        getListView().onItemClickListener = this
     }
 
     /**
      * Invokes updateList which polls the REST API for folder status updates
-     *  while the user is looking at the current tab.
+     * while the user is looking at the current tab.
      */
-    private void onTimerEvent() {
-        MainActivity mainActivity = (MainActivity) getActivity();
+    private fun onTimerEvent() {
+        val mainActivity = activity as MainActivity?
         if (mainActivity == null) {
-            return;
+            return
         }
-        if (mainActivity.isFinishing()) {
-            return;
+        if (mainActivity.isFinishing) {
+            return
         }
         if (ENABLE_DEBUG_LOG) {
-            LogV("Invoking updateList on UI thread");
+            LogV("Invoking updateList on UI thread")
         }
-        mainActivity.runOnUiThread(FolderListFragment.this::updateList);
+        mainActivity.runOnUiThread(Runnable { this@FolderListFragment.updateList() })
     }
 
     /**
@@ -142,83 +128,84 @@ public class FolderListFragment extends ListFragment implements SyncthingService
      *
      * Also creates adapter if it doesn't exist yet.
      */
-    private void updateList() {
-        SyncthingActivity activity = (SyncthingActivity) getActivity();
-        if (activity == null || getView() == null || activity.isFinishing()) {
-            return;
+    private fun updateList() {
+        val activity = activity as SyncthingActivity?
+        if (activity == null || view == null || activity.isFinishing) {
+            return
         }
         if (mConfigRouter == null) {
-            mConfigRouter = new ConfigRouter(activity);
+            mConfigRouter = ConfigRouter(activity)
         }
-        List<Folder> folders;
-        RestApi restApi = activity.getApi();
+        val folders: MutableList<Folder?>?
+        val restApi = activity.api
         try {
-            folders = mConfigRouter.getFolders(restApi);
-        } catch (OpenConfigException e) {
-            Log.e(TAG, "Failed to parse existing config. You will need support from here ...");
-            return;
+            folders = mConfigRouter!!.getFolders(restApi)
+        } catch (e: OpenConfigException) {
+            Log.e(TAG, "Failed to parse existing config. You will need support from here ...")
+            return
         }
         if (folders == null) {
-            return;
+            return
         }
         if (mAdapter == null) {
-            mAdapter = new FoldersAdapter(activity);
-            setListAdapter(mAdapter);
+            mAdapter = FoldersAdapter(activity)
+            setListAdapter(mAdapter)
         }
-        mAdapter.setRestApi(restApi);
+        mAdapter!!.setRestApi(restApi)
 
         // Prevent scroll position reset due to list update from clear().
-        mAdapter.setNotifyOnChange(false);
-        mAdapter.clear();
-        mAdapter.addAll(folders);
-        mAdapter.notifyDataSetChanged();
-        setListShown(true);
+        mAdapter!!.setNotifyOnChange(false)
+        mAdapter!!.clear()
+        mAdapter!!.addAll(folders)
+        mAdapter!!.notifyDataSetChanged()
+        setListShown(true)
     }
 
-    @Override
-    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-        Intent intent = new Intent(getActivity(), FolderActivity.class)
-                .putExtra(FolderActivity.EXTRA_IS_CREATE, false)
-                .putExtra(FolderActivity.EXTRA_FOLDER_ID, mAdapter.getItem(i).id);
-        startActivity(intent);
+    override fun onItemClick(adapterView: AdapterView<*>?, view: View?, i: Int, l: Long) {
+        val intent = Intent(activity, FolderActivity::class.java)
+            .putExtra(FolderActivity.EXTRA_IS_CREATE, false)
+            .putExtra(FolderActivity.EXTRA_FOLDER_ID, mAdapter!!.getItem(i)!!.id)
+        startActivity(intent)
     }
 
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.folder_list, menu);
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.folder_list, menu)
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int itemId = item.getItemId();
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val itemId = item.itemId
         if (itemId == R.id.add_folder) {
-            Intent intent = new Intent(getActivity(), FolderActivity.class)
-                    .putExtra(FolderActivity.EXTRA_IS_CREATE, true);
-            startActivity(intent);
-            return true;
+            val intent = Intent(activity, FolderActivity::class.java)
+                .putExtra(FolderActivity.EXTRA_IS_CREATE, true)
+            startActivity(intent)
+            return true
         } else if (itemId == R.id.rescan_all) {
-            rescanAll();
-            return true;
+            rescanAll()
+            return true
         }
-        return super.onOptionsItemSelected(item);
+        return super.onOptionsItemSelected(item)
     }
 
-    private void rescanAll() {
-        SyncthingActivity activity = (SyncthingActivity) getActivity();
-        if (activity == null || getView() == null || activity.isFinishing()) {
-            return;
+    private fun rescanAll() {
+        val activity = activity as SyncthingActivity?
+        if (activity == null || view == null || activity.isFinishing) {
+            return
         }
-        RestApi restApi = activity.getApi();
-        if (restApi == null || !restApi.isConfigLoaded()) {
-            Log.e(TAG, "rescanAll skipped because Syncthing is not running.");
-            return;
+        val restApi = activity.api
+        if (restApi == null || !restApi.isConfigLoaded) {
+            Log.e(TAG, "rescanAll skipped because Syncthing is not running.")
+            return
         }
-        restApi.rescanAll();
+        restApi.rescanAll()
     }
 
-    private void LogV(String logMessage) {
+    private fun LogV(logMessage: String) {
         if (ENABLE_VERBOSE_LOG) {
-            Log.v(TAG, logMessage);
+            Log.v(TAG, logMessage)
         }
+    }
+
+    companion object {
+        private const val TAG = "FolderListFragment"
     }
 }
