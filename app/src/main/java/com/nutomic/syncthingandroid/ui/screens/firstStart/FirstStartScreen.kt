@@ -1,4 +1,4 @@
-package com.nutomic.syncthingandroid.ui.screens
+package com.nutomic.syncthingandroid.ui.screens.firstStart
 
 import android.app.Application
 import androidx.activity.compose.BackHandler
@@ -14,13 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.nutomic.syncthingandroid.ui.common.slides.SlidesController
 import com.nutomic.syncthingandroid.ui.common.slides.rememberSlideState
-import com.nutomic.syncthingandroid.ui.screens.firstStart.IgnoreDozePermissionSlide
-import com.nutomic.syncthingandroid.ui.screens.firstStart.KeyGenerationSlide
-import com.nutomic.syncthingandroid.ui.screens.firstStart.LocationPermissionSlide
-import com.nutomic.syncthingandroid.ui.screens.firstStart.NotificationPermissionSlide
-import com.nutomic.syncthingandroid.ui.screens.firstStart.StoragePermissionSlide
-import com.nutomic.syncthingandroid.ui.screens.firstStart.WelcomeSlide
-import com.nutomic.syncthingandroid.ui.screens.firstStart.keygen.KeyGenerationViewModelImpl
+import com.nutomic.syncthingandroid.ui.screens.firstStart.slides.keygen.KeyGenerationViewModelImpl
 import com.nutomic.syncthingandroid.ui.theme.SyncthingandroidTheme
 
 

@@ -1,4 +1,4 @@
-package com.nutomic.syncthingandroid.ui.screens.firstStart.keygen
+package com.nutomic.syncthingandroid.ui.screens.firstStart.slides.keygen
 
 import android.app.Application
 import android.util.Log

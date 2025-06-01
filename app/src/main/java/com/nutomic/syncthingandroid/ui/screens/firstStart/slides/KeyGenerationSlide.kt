@@ -16,9 +16,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.nutomic.syncthingandroid.R
 import com.nutomic.syncthingandroid.ui.common.slides.SlideState
 import com.nutomic.syncthingandroid.ui.common.slides.rememberSlideState
-import com.nutomic.syncthingandroid.ui.screens.firstStart.keygen.KeyGenerationState
-import com.nutomic.syncthingandroid.ui.screens.firstStart.keygen.KeyGenerationViewModel
-import com.nutomic.syncthingandroid.ui.screens.firstStart.keygen.PreviewKeyGenerationViewModel
+import com.nutomic.syncthingandroid.ui.screens.firstStart.slides.keygen.KeyGenerationState
+import com.nutomic.syncthingandroid.ui.screens.firstStart.slides.keygen.KeyGenerationViewModel
+import com.nutomic.syncthingandroid.ui.screens.firstStart.slides.keygen.PreviewKeyGenerationViewModel
 import com.nutomic.syncthingandroid.ui.theme.SyncthingandroidTheme
 
 @Composable

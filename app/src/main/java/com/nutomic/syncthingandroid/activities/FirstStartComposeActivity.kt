@@ -14,8 +14,8 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.nutomic.syncthingandroid.service.Constants
-import com.nutomic.syncthingandroid.ui.screens.FirstStartScreen
-import com.nutomic.syncthingandroid.ui.screens.Slide
+import com.nutomic.syncthingandroid.ui.screens.firstStart.FirstStartScreen
+import com.nutomic.syncthingandroid.ui.screens.firstStart.Slide
 import com.nutomic.syncthingandroid.ui.theme.SyncthingandroidTheme
 import com.nutomic.syncthingandroid.util.compose.doze.rememberDozePermissionState
 import com.nutomic.syncthingandroid.util.compose.scopedStorage.rememberScopedStoragePermissionState
