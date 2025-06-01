@@ -23,6 +23,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import com.nutomic.syncthingandroid.R
 import com.nutomic.syncthingandroid.activities.SyncthingActivity
+import com.nutomic.syncthingandroid.ui.screens.devices.DevicesScreen
+import com.nutomic.syncthingandroid.ui.screens.devices.DevicesViewModelImpl
 import com.nutomic.syncthingandroid.ui.screens.folders.FoldersScreen
 import com.nutomic.syncthingandroid.ui.screens.folders.FoldersViewModelImpl
 
@@ -54,7 +56,10 @@ fun SyncthingandroidApp() {
                     modifier = Modifier.padding(innerPadding),
                     viewModel = FoldersViewModelImpl(LocalActivity.current as SyncthingActivity)
                 )
-//                AppDestinations.DEVICES -> DevicesScreen(modifier = Modifier.padding(innerPadding))
+                AppDestinations.DEVICES -> DevicesScreen(
+                    modifier = Modifier.padding(innerPadding),
+                    viewModel = DevicesViewModelImpl(LocalActivity.current as SyncthingActivity)
+                )
 //                AppDestinations.STATUS -> StatusScreen(modifier = Modifier.padding(innerPadding))
                 else -> Text("TODO")
             }

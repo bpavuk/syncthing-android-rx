@@ -51,3 +51,4 @@ scripts/debug/*.xml
 app/src/main/play/listings/nb
 app/src/main/play/listings/nl-BE
 app/src/main/play/listings/nn
+.aider*

@@ -1,4 +1,4 @@
-package com.nutomic.syncthingandroid.ui.screens.folders
+package com.nutomic.syncthingandroid.ui.screens.devices
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -11,26 +11,30 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 
 @Composable
-fun FoldersScreen(
-    viewModel: FoldersViewModel,
+fun DevicesScreen(
+    viewModel: DevicesViewModel,
     modifier: Modifier = Modifier
 ) {
-    val folders = viewModel.folders
+    val devices = viewModel.devices
 
     // TODO: once [SyncthingService] is rewritten with Coroutines and Flow, replace with
     //  flows-as-states
     LaunchedEffect(null) {
         while (true) {
-            viewModel.retrieveFolders()
+            viewModel.retrieveDevices()
             delay(20)
         }
     }
 
     Column(modifier) {
-        for (folder in folders) {
-            Text(folder.label)
-            folder.path?.let { Text(it) }
-            Spacer(Modifier.size(8.dp))
+        if (devices.isEmpty()) {
+            Text("No devices found.")
+        } else {
+            for (device in devices) {
+                Text(device.name)
+                Text(device.deviceID)
+                Spacer(Modifier.size(8.dp))
+            }
         }
     }
 }
