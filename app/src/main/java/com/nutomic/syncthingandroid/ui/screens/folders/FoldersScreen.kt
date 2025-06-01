@@ -29,7 +29,7 @@ fun FoldersScreen(
     Column(modifier) {
         for (folder in folders) {
             Text(folder.label)
-            Text(folder.path)
+            folder.path?.let { Text(it) }
             Spacer(Modifier.size(8.dp))
         }
     }
