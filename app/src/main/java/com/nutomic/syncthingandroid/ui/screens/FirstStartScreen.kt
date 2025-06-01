@@ -1,6 +1,7 @@
 package com.nutomic.syncthingandroid.ui.screens
 
 import android.app.Application
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -42,6 +43,11 @@ fun FirstStartScreen(
     // TODO: migrate to Nav3 when it's out of Alpha
     val slideCount = slides.count()
     val slideState = rememberSlideState(slideCount, 1)
+
+    BackHandler {
+        slideState.previousSlide()
+    }
+
     Scaffold(
         modifier = modifier,
         bottomBar = {
