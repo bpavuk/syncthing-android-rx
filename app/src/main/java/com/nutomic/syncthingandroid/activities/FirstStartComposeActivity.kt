@@ -54,40 +54,27 @@ class FirstStartComposeActivity : AppCompatActivity() {
             } else {
                 true // assume true for earlier Android versions where Doze is non-existent
             }
-            val isNotificationPermissionGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                rememberPermissionState(
-                    permission = Manifest.permission.POST_NOTIFICATIONS
-                ).status.isGranted
-            } else {
-                true // not needed on earlier Android versions
-            }
+            val isNotificationPermissionGranted =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    rememberPermissionState(
+                        permission = Manifest.permission.POST_NOTIFICATIONS
+                    ).status.isGranted
+                } else {
+                    true // not needed on earlier Android versions
+                }
             val isKeyConfigValid = parseableConfigExists(application)
 
-            val shouldSkip = isStorageGranted && isDozeGranted
-                    && isNotificationPermissionGranted && isKeyConfigValid
+            val shouldSkip =
+                isStorageGranted && isDozeGranted && isNotificationPermissionGranted && isKeyConfigValid
 
             if (shouldSkip) {
-                val intent = Intent(this, MainActivity::class.java)
-
-                if (mPreferences?.getBoolean(
-                        Constants.PREF_START_INTO_WEB_GUI,
-                        false
-                    ) == true) {
-                    startActivities(arrayOf(
-                        intent,
-                        Intent(this, WebGuiActivity::class.java)
-                    ))
-                } else {
-                    startActivity(intent)
-                }
+                startApp()
                 finish()
             }
 
             SyncthingandroidTheme {
                 FirstStartScreen(
-                    modifier = Modifier.fillMaxSize(),
-                    slides = slides,
-                    onIntroFinished = ::startApp
+                    modifier = Modifier.fillMaxSize(), slides = slides, onIntroFinished = ::startApp
                 )
             }
         }
@@ -95,7 +82,7 @@ class FirstStartComposeActivity : AppCompatActivity() {
 
 
     private fun startApp() {
-        val mainIntent = Intent(this, MainActivity::class.java)
+        val mainIntent = Intent(this, MainComposeActivity::class.java)
         /**
          * In case start_into_web_gui option is enabled, start both activities
          * so that back navigation works as expected.
