@@ -29,11 +29,11 @@ class SlideState internal constructor(
         get() = currentSlide == maxSlides
 
     fun nextSlide() {
-        if (currentSlide < maxSlides) currentSlide++
+        if (currentSlide < maxSlides && !forwardBlocked) currentSlide++
     }
 
     fun previousSlide() {
-        if (currentSlide > 1) currentSlide--
+        if (canGoBack && !backBlocked) currentSlide--
     }
 }
 
