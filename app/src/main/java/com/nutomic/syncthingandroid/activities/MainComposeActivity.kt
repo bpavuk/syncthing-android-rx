@@ -1,13 +1,12 @@
 package com.nutomic.syncthingandroid.activities
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.nutomic.syncthingandroid.ui.SyncthingandroidApp
 import com.nutomic.syncthingandroid.ui.theme.SyncthingandroidTheme
 
-class MainComposeActivity : ComponentActivity() {
+class MainComposeActivity : SyncthingActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -18,4 +17,3 @@ class MainComposeActivity : ComponentActivity() {
         }
     }
 }
-

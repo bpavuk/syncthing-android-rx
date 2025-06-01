@@ -1,5 +1,6 @@
 package com.nutomic.syncthingandroid.ui
 
+import androidx.activity.compose.LocalActivity
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -21,6 +22,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import com.nutomic.syncthingandroid.R
+import com.nutomic.syncthingandroid.activities.SyncthingActivity
+import com.nutomic.syncthingandroid.ui.screens.folders.FoldersScreen
+import com.nutomic.syncthingandroid.ui.screens.folders.FoldersViewModelImpl
 
 @PreviewScreenSizes
 @Composable
@@ -46,9 +50,13 @@ fun SyncthingandroidApp() {
     ) {
         Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
             when (currentDestination) {
-                AppDestinations.FOLDERS -> FoldersScreen(modifier = Modifier.padding(innerPadding))
-                AppDestinations.DEVICES -> DevicesScreen(modifier = Modifier.padding(innerPadding))
-                AppDestinations.STATUS -> StatusScreen(modifier = Modifier.padding(innerPadding))
+                AppDestinations.FOLDERS -> FoldersScreen(
+                    modifier = Modifier.padding(innerPadding),
+                    viewModel = FoldersViewModelImpl(LocalActivity.current as SyncthingActivity)
+                )
+//                AppDestinations.DEVICES -> DevicesScreen(modifier = Modifier.padding(innerPadding))
+//                AppDestinations.STATUS -> StatusScreen(modifier = Modifier.padding(innerPadding))
+                else -> Text("TODO")
             }
         }
     }
