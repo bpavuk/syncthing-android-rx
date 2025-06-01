@@ -9,6 +9,7 @@ import com.nutomic.syncthingandroid.util.ConfigXml.OpenConfigException
 
 const val TAG = "XmlConfigUtils"
 
+// TODO: make this function suspend
 fun parseableConfigExists(application: Application): Boolean {
     val configExists = Constants.getConfigFile(application).exists()
     if (!configExists) {
