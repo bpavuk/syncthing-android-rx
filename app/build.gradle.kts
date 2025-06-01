@@ -11,6 +11,7 @@ dependencies {
     implementation(platform(libs.compose.bom))
     implementation(libs.ui.graphics)
     implementation(libs.material3)
+    implementation(libs.material3.adaptive.navigation.suite)
     androidTestImplementation(libs.annotation)
     androidTestImplementation(libs.rules)
     implementation(libs.aboutlibraries.compose.m3)

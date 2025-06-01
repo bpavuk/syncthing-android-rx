@@ -73,6 +73,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Syncthing">
         <activity
+            android:name=".activities.MainComposeActivity"
+            android:exported="false"
+            android:label="@string/title_activity_main_compose"
+            android:theme="@style/Theme.Syncthing" />
+        <activity
             android:name=".activities.FirstStartComposeActivity"
             android:exported="true"
             android:launchMode="singleInstance"

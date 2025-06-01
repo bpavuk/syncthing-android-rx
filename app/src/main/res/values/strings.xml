@@ -1127,4 +1127,5 @@
     <string name="qs_schedule_label_minutes" tools:ignore="PluralsCandidate">Run for %1$d minutes</string>
     <string name="qs_schedule_disabled">Schedule disabled</string>
     <string name="title_activity_first_start_compose">FirstStartComposeActivity</string>
+    <string name="title_activity_main_compose">MainComposeActivity</string>
 </resources>
