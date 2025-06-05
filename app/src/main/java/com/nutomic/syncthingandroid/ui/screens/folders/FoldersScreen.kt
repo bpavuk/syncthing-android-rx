@@ -22,14 +22,14 @@ fun FoldersScreen(
     LaunchedEffect(null) {
         while (true) {
             viewModel.retrieveFolders()
-            delay(20)
+            delay(2000)
         }
     }
 
     Column(modifier) {
         for (folder in folders) {
             Text(folder.label)
-            folder.path?.let { Text(it) }
+            Text(folder.path)
             Spacer(Modifier.size(8.dp))
         }
     }

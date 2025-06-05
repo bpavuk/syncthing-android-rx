@@ -6,36 +6,38 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
-import com.nutomic.syncthingandroid.activities.SyncthingActivity
-import com.nutomic.syncthingandroid.model.Device
-import com.nutomic.syncthingandroid.util.ConfigRouter
+import androidx.lifecycle.viewModelScope
+import com.nutomic.syncthingandroid.util.ConfigRouterKt
 import com.nutomic.syncthingandroid.util.ConfigXml
+import kotlinx.coroutines.launch
+import syncthingrest.model.device.Device
 
 interface DevicesViewModel {
     val devices: List<Device>
 
-    fun retrieveDevices()
+    fun updateDevices()
 }
 
 class DevicesViewModelImpl(
-    application: SyncthingActivity
-) : DevicesViewModel, AndroidViewModel(application.applicationContext as Application) {
-    private val configRouter = ConfigRouter(application)
-    private val restApi = application.api
+    application: Application,
+    private val configRouter: ConfigRouterKt,
+) : DevicesViewModel, AndroidViewModel(application) {
 
     override var devices: List<Device> by mutableStateOf(emptyList())
         private set
 
-    override fun retrieveDevices() {
-        try {
-            configRouter.getDevices(restApi, false)
-        } catch (e: ConfigXml.OpenConfigException) {
-
-            Log.e(
-                TAG,
-                "Failed to parse existing config. You will need support from here...",
-                e
-            )
+    override fun updateDevices() {
+        viewModelScope.launch {
+            try {
+                devices = configRouter.loadDevices()
+            } catch (e: ConfigXml.OpenConfigException) {
+                Log.e(
+                    TAG,
+                    "Failed to parse existing config. You will need support from here...",
+                    e
+                )
+                devices = emptyList() // Ensure devices is in a consistent state on error
+            }
         }
     }
 

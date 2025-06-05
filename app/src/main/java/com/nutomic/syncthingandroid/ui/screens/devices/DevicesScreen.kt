@@ -21,8 +21,8 @@ fun DevicesScreen(
     //  flows-as-states
     LaunchedEffect(null) {
         while (true) {
-            viewModel.retrieveDevices()
-            delay(20)
+            viewModel.updateDevices()
+            delay(2000)
         }
     }
 

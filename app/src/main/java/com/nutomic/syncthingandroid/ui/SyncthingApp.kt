@@ -1,6 +1,5 @@
 package com.nutomic.syncthingandroid.ui
 
-import androidx.activity.compose.LocalActivity
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -22,11 +21,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import com.nutomic.syncthingandroid.R
-import com.nutomic.syncthingandroid.activities.SyncthingActivity
 import com.nutomic.syncthingandroid.ui.screens.devices.DevicesScreen
 import com.nutomic.syncthingandroid.ui.screens.devices.DevicesViewModelImpl
 import com.nutomic.syncthingandroid.ui.screens.folders.FoldersScreen
 import com.nutomic.syncthingandroid.ui.screens.folders.FoldersViewModelImpl
+import org.koin.androidx.compose.koinViewModel
 
 @PreviewScreenSizes
 @Composable
@@ -54,11 +53,11 @@ fun SyncthingandroidApp() {
             when (currentDestination) {
                 AppDestinations.FOLDERS -> FoldersScreen(
                     modifier = Modifier.padding(innerPadding),
-                    viewModel = FoldersViewModelImpl(LocalActivity.current as SyncthingActivity)
+                    viewModel = koinViewModel<FoldersViewModelImpl>()
                 )
                 AppDestinations.DEVICES -> DevicesScreen(
                     modifier = Modifier.padding(innerPadding),
-                    viewModel = DevicesViewModelImpl(LocalActivity.current as SyncthingActivity)
+                    viewModel = koinViewModel<DevicesViewModelImpl>()
                 )
 //                AppDestinations.STATUS -> StatusScreen(modifier = Modifier.padding(innerPadding))
                 else -> Text("TODO")
