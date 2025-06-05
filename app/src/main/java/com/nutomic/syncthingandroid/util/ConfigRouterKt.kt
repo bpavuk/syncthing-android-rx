@@ -6,8 +6,11 @@ import syncthingrest.RestApiKt
 import syncthingrest.model.device.Device
 import syncthingrest.model.folder.Folder
 import syncthingrest.model.folder.IgnoredFolder
+import syncthingrest.model.folder.FolderType
+import syncthingrest.model.device.SharedWithDevice as KotlinSharedWithDevice
 import com.nutomic.syncthingandroid.model.Device as JavaDevice
 import com.nutomic.syncthingandroid.model.Folder as JavaFolder
+import com.nutomic.syncthingandroid.model.SharedWithDevice as JavaSharedWithDevice
 
 class ConfigRouterKt(context: Context, val restApi: RestApiKt) {
     private val configXml = ConfigXml(context)
@@ -65,6 +68,66 @@ class ConfigRouterKt(context: Context, val restApi: RestApiKt) {
 
     private fun JavaFolder.toKotlin(): Folder =
         Folder(
-
+            id = id ?: "", // Assuming id is never null in practice, but adding Elvis for safety
+            label = label ?: "",
+            filesystemType = filesystemType ?: "basic",
+            path = path ?: "", // Assuming path is never null in practice, but adding Elvis for safety
+            type = when (type) {
+                "sendreceive" -> FolderType.SEND_RECEIVE
+                "sendonly" -> FolderType.SEND_ONLY
+                "receiveonly" -> FolderType.RECEIVE_ONLY
+                else -> FolderType.SEND_RECEIVE // Default from Kotlin Folder
+            },
+            fsWatcherEnabled = fsWatcherEnabled,
+            fsWatcherDelayS = fsWatcherDelayS,
+            sharedWithDevices = getSharedWithDevices().map { javaSharedWithDevice ->
+                KotlinSharedWithDevice(
+                    deviceID = javaSharedWithDevice.deviceID ?: "",
+                    introducedBy = javaSharedWithDevice.introducedBy ?: "",
+                    encryptionPassword = javaSharedWithDevice.encryptionPassword ?: ""
+                )
+            }.toMutableList(),
+            rescanIntervalS = rescanIntervalS,
+            ignorePerms = ignorePerms,
+            autoNormalize = autoNormalize,
+            minDiskFree = minDiskFree?.let { javaMinDiskFree ->
+                Folder.MinDiskFree(
+                    value = javaMinDiskFree.value,
+                    unit = javaMinDiskFree.unit ?: "%"
+                )
+            },
+            versioning = versioning?.let { javaVersioning ->
+                Folder.Versioning(
+                    type = javaVersioning.type,
+                    cleanupIntervalS = javaVersioning.cleanupIntervalS,
+                    params = javaVersioning.params?.mapValues { it.value }?.toMutableMap() ?: mutableMapOf(),
+                    fsPath = javaVersioning.fsPath,
+                    fsType = javaVersioning.fsType ?: "basic"
+                )
+            },
+            copiers = copiers,
+            pullerMaxPendingKiB = pullerMaxPendingKiB,
+            hashers = hashers,
+            order = order ?: "random",
+            ignoreDelete = ignoreDelete,
+            scanProgressIntervalS = scanProgressIntervalS,
+            pullerPauseS = pullerPauseS,
+            maxConflicts = maxConflicts,
+            disableSparseFiles = disableSparseFiles,
+            disableTempIndexes = disableTempIndexes,
+            paused = paused,
+            weakHashThresholdPct = weakHashThresholdPct,
+            copyOwnershipFromParent = copyOwnershipFromParent ?: false,
+            modTimeWindowS = modTimeWindowS,
+            blockPullOrder = blockPullOrder ?: "standard",
+            disableFsync = disableFsync ?: false,
+            maxConcurrentWrites = maxConcurrentWrites,
+            copyRangeMethod = copyRangeMethod ?: "standard",
+            caseSensitiveFS = caseSensitiveFS ?: false,
+            syncOwnership = syncOwnership ?: false,
+            sendOwnership = sendOwnership ?: false,
+            syncXattrs = syncXattrs ?: false,
+            sendXattrs = sendXattrs ?: false,
+            invalid = invalid
         )
 }
