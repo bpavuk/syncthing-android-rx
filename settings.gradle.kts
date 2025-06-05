@@ -20,3 +20,5 @@ include(
     ":syncthing"
 )
 include(":SyncthingREST")
+
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

@@ -5,28 +5,26 @@ import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import syncthingrest.logging.Logger
 import syncthingrest.model.device.Device
+import syncthingrest.model.folder.Folder
+import javax.net.ssl.X509TrustManager
 
-@Serializable
-private data class SystemConfig(
-    val devices: List<Device>
-    // Add other fields from the config if needed, e.g., folders, gui, etc.
-)
 
 class RestApiKt(
     private val baseUrl: String,
     private val apiKey: String,
-    private val logger: Logger = Logger(),
+    private val sslSettings: SslSettings,
+    private val logger: Logger = Logger,
 ) {
-    private val client: HttpClient = HttpClient(CIO) {
+    val client = HttpClient(CIO) {
         expectSuccess = true // Ktor will throw exceptions for non-2xx responses
         install(ContentNegotiation) {
             json(Json {
@@ -35,10 +33,17 @@ class RestApiKt(
                 ignoreUnknownKeys = true // Important for evolving APIs
             })
         }
+        install(Logging)
         defaultRequest {
-            url(this@RestApiKt.baseUrl) // Base URL for all requests
+            url(this@RestApiKt.baseUrl)
             header("X-API-Key", this@RestApiKt.apiKey)
             contentType(ContentType.Application.Json)
+        }
+
+        engine {
+            https {
+                trustManager = sslSettings.getTrustManager()
+            }
         }
     }
 
@@ -46,11 +51,23 @@ class RestApiKt(
         return try {
             logger.d(TAG, "Attempting to load devices from /rest/config/devices")
             val devices = client.get("rest/config/devices").body<List<Device>>()
-            logger.i(TAG, "Successfully loaded \${config.devices.size} devices")
+            logger.i(TAG, "Successfully loaded ${devices.size} devices")
             devices
         } catch (e: Exception) {
-            logger.e(TAG, "Failed to load devices: \${e.message}", e)
+            logger.e(TAG, "Failed to load devices: ${e.message}", e)
             emptyList() // Return an empty list or rethrow a custom domain-specific exception
+        }
+    }
+
+    suspend fun getFolders(): List<Folder> {
+        return try {
+            logger.d(TAG, "Attempting to load folders from /rest/config/folders")
+            val folders = client.get("rest/config/folders").body<List<Folder>>()
+            logger.i(TAG, "Successfully loaded ${folders.size} folders")
+            folders
+        } catch (e: Exception) {
+            logger.e(TAG, "Failed to load folders: ${e.message}", e)
+            emptyList()
         }
     }
 
@@ -59,4 +76,7 @@ class RestApiKt(
     companion object {
         private const val TAG = "RestApiKt"
     }
+}
+expect interface SslSettings {
+    fun getTrustManager(): X509TrustManager
 }

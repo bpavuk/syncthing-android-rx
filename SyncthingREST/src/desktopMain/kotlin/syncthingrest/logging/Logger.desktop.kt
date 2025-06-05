@@ -1,6 +1,6 @@
 package syncthingrest.logging
 
-actual class Logger {
+actual object Logger {
     private fun log(level: Level, tag: String, message: String, e: Exception?) {
         println("# $tag @ $level: $message")
         e?.let { e ->

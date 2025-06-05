@@ -11,8 +11,9 @@ import kotlinx.serialization.encoding.Encoder
 @Serializable(with = FolderTypeSerializer::class)
 enum class FolderType(val apiName: String) {
     SEND_RECEIVE("sendreceive"),
-    SEND("send"),
-    RECEIVE("receive")
+    SEND_ONLY("sendonly"),
+    RECEIVE_ONLY("receiveonly"),
+    RECEIVE_ENCRYPTED("receiveencrypted")
 }
 
 object FolderTypeSerializer : KSerializer<FolderType> {

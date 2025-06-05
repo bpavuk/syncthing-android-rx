@@ -52,23 +52,20 @@ dependencies {
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
 
-    // Ktor
-    implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.cio)
-    implementation(libs.ktor.client.content.negotiation)
-    implementation(libs.ktor.serialization.kotlinx.json)
+    // API
+    implementation(projects.syncthingREST)
 }
 
 android {
     val ndkVersionShared = rootProject.extra.get("ndkVersionShared")
-    val versionMajor: kotlin.Int by rootProject.extra
-    val versionMinor: kotlin.Int by rootProject.extra
-    val versionPatch: kotlin.Int by rootProject.extra
-    val versionWrapper: kotlin.Int by rootProject.extra
+    val versionMajor: Int by rootProject.extra
+    val versionMinor: Int by rootProject.extra
+    val versionPatch: Int by rootProject.extra
+    val versionWrapper: Int by rootProject.extra
 
     compileSdk = 35
     buildToolsVersion = "35.0.0"
-    ndkVersion = "${ndkVersionShared}"
+    ndkVersion = "$ndkVersionShared"
 
     namespace = "com.nutomic.syncthingandroid"
 

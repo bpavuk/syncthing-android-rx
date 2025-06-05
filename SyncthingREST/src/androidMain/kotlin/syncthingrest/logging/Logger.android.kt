@@ -2,7 +2,7 @@ package syncthingrest.logging
 
 import android.util.Log
 
-actual class Logger {
+actual object Logger {
     actual fun e(tag: String, message: String, e: Exception?) {
         e?.let { Log.e(tag, message, it) } ?: Log.e(tag, message)
     }

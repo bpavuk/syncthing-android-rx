@@ -5,12 +5,11 @@ import android.util.Log
 import syncthingrest.RestApiKt
 import syncthingrest.model.device.Device
 import syncthingrest.model.folder.Folder
-import syncthingrest.model.folder.IgnoredFolder
 import syncthingrest.model.folder.FolderType
-import syncthingrest.model.device.SharedWithDevice as KotlinSharedWithDevice
+import syncthingrest.model.folder.IgnoredFolder
 import com.nutomic.syncthingandroid.model.Device as JavaDevice
 import com.nutomic.syncthingandroid.model.Folder as JavaFolder
-import com.nutomic.syncthingandroid.model.SharedWithDevice as JavaSharedWithDevice
+import syncthingrest.model.device.SharedWithDevice as KotlinSharedWithDevice
 
 class ConfigRouterKt(context: Context, val restApi: RestApiKt) {
     private val configXml = ConfigXml(context)
@@ -68,21 +67,22 @@ class ConfigRouterKt(context: Context, val restApi: RestApiKt) {
 
     private fun JavaFolder.toKotlin(): Folder =
         Folder(
-            id = id ?: "", // Assuming id is never null in practice, but adding Elvis for safety
+            id = id,
             label = label ?: "",
             filesystemType = filesystemType ?: "basic",
-            path = path ?: "", // Assuming path is never null in practice, but adding Elvis for safety
+            path = path,
             type = when (type) {
                 "sendreceive" -> FolderType.SEND_RECEIVE
                 "sendonly" -> FolderType.SEND_ONLY
                 "receiveonly" -> FolderType.RECEIVE_ONLY
+                "receiveencrypted" -> FolderType.RECEIVE_ENCRYPTED
                 else -> FolderType.SEND_RECEIVE // Default from Kotlin Folder
             },
             fsWatcherEnabled = fsWatcherEnabled,
             fsWatcherDelayS = fsWatcherDelayS,
-            sharedWithDevices = getSharedWithDevices().map { javaSharedWithDevice ->
+            sharedWithDevices = sharedWithDevices.map { javaSharedWithDevice ->
                 KotlinSharedWithDevice(
-                    deviceID = javaSharedWithDevice.deviceID ?: "",
+                    deviceID = javaSharedWithDevice.deviceID,
                     introducedBy = javaSharedWithDevice.introducedBy ?: "",
                     encryptionPassword = javaSharedWithDevice.encryptionPassword ?: ""
                 )
