@@ -5,9 +5,7 @@ plugins {
 }
 
 kotlin {
-    androidTarget("android") {
-
-    }
+    androidTarget("android")
     jvm("desktop") // Defines a JVM target for desktop applications
 
     sourceSets {
@@ -25,11 +23,11 @@ kotlin {
                 // Android-specific dependencies can go here
             }
         }
-//        val desktopMain by getting {
-//            dependencies {
-//                // Desktop-specific dependencies can go here
-//            }
-//        }
+        val desktopMain by getting {
+            dependencies {
+                // Desktop-specific dependencies can go here
+            }
+        }
     }
 }
 
