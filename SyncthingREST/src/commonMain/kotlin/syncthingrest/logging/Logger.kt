@@ -1,6 +1,6 @@
 package syncthingrest.logging
 
-expect class Logger {
+expect class Logger() {
     fun e(tag: String, message: String, e: Exception? = null)
     fun w(tag: String, message: String, e: Exception? = null)
     fun i(tag: String, message: String, e: Exception? = null)

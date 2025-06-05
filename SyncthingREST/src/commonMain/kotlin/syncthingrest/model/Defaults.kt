@@ -1,6 +1,8 @@
 package syncthingrest.model
 
 import kotlinx.serialization.Serializable
+import syncthingrest.model.device.Device
+import syncthingrest.model.folder.Folder
 
 @Serializable
 data class Defaults(

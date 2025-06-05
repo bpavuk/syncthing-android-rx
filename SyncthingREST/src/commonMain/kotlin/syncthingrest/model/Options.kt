@@ -1,6 +1,7 @@
 package syncthingrest.model
 
 import kotlinx.serialization.Serializable
+import syncthingrest.model.goCompat.GoSize
 
 @Serializable
 data class Options(
@@ -32,7 +33,7 @@ data class Options(
     val cacheIgnoredFiles: Boolean = false,
     val progressUpdateIntervalS: Int = 5,
     val limitBandwidthInLan: Boolean = false,
-    val minHomeDiskFree: String = "1 %", // Corresponds to Go's 'Size' type, which is a string representation
+    val minHomeDiskFree: GoSize = GoSize(1, "%"), // Corresponds to Go's 'Size' type
     val releasesURL: String = "https://upgrades.syncthing.net/meta.json",
     val alwaysLocalNets: List<String> = emptyList(), // No default in Go, empty list is Go's zero value for slices
     val overwriteRemoteDeviceNamesOnConnect: Boolean = false,
@@ -45,7 +46,7 @@ data class Options(
     val stunKeepaliveStartS: Int = 180,
     val stunKeepaliveMinS: Int = 20,
     val stunServers: List<String> = listOf("default"),
-    val databaseTuning: String = "", // Corresponds to Go's 'Tuning' type, assuming string representation, default is empty string
+    val databaseTuning: String = "auto", // Corresponds to Go's 'Tuning' type, assuming string representation, default is empty string
     val maxConcurrentIncomingRequestKiB: Int = 0, // Go's default logic applies if 0
     val announceLANAddresses: Boolean = true,
     val sendFullIndexOnUpgrade: Boolean = false, // No default in Go, false is Go's zero value
@@ -58,6 +59,6 @@ data class Options(
     val connectionPriorityQuicLan: Int = 20,
     val connectionPriorityTcpWan: Int = 30,
     val connectionPriorityQuicWan: Int = 40,
-    val connectionPriorityRelay: Int = 50, // Added missing field with default
+    val connectionPriorityRelay: Int = 50,
     val connectionPriorityUpgradeThreshold: Int = 0
 )
