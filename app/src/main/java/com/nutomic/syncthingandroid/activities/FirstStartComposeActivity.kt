@@ -2,17 +2,25 @@ package com.nutomic.syncthingandroid.activities
 
 import android.Manifest
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.nutomic.syncthingandroid.service.Constants
+import com.nutomic.syncthingandroid.ui.screens.firstStart.FirstStartScreen
+import com.nutomic.syncthingandroid.ui.screens.firstStart.Slide
 import com.nutomic.syncthingandroid.ui.theme.SyncthingandroidTheme
+import com.nutomic.syncthingandroid.util.compose.doze.rememberDozePermissionState
+import com.nutomic.syncthingandroid.util.compose.scopedStorage.rememberScopedStoragePermissionState
+import com.nutomic.syncthingandroid.util.parseableConfigExists
+import javax.inject.Inject
 
 class FirstStartComposeActivity : AppCompatActivity() {
     @Inject

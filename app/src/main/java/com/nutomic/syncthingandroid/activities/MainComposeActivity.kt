@@ -14,8 +14,8 @@ import com.nutomic.syncthingandroid.ui.SyncthingandroidApp
 import com.nutomic.syncthingandroid.ui.screens.devices.DevicesViewModelImpl
 import com.nutomic.syncthingandroid.ui.screens.folders.FoldersViewModelImpl
 import com.nutomic.syncthingandroid.ui.theme.SyncthingandroidTheme
-import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.context.loadKoinModules
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val mainActivityModule = module {
