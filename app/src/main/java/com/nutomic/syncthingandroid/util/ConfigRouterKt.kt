@@ -4,12 +4,13 @@ import android.content.Context
 import android.util.Log
 import syncthingrest.RestApiKt
 import syncthingrest.model.device.Device
+import syncthingrest.model.device.SharedWithDevice
 import syncthingrest.model.folder.Folder
 import syncthingrest.model.folder.FolderType
 import syncthingrest.model.folder.IgnoredFolder
 import com.nutomic.syncthingandroid.model.Device as JavaDevice
 import com.nutomic.syncthingandroid.model.Folder as JavaFolder
-import syncthingrest.model.device.SharedWithDevice as KotlinSharedWithDevice
+import com.nutomic.syncthingandroid.model.SharedWithDevice as JavaSharedWithDevice
 
 class ConfigRouterKt(context: Context, val restApi: RestApiKt) {
     private val configXml = ConfigXml(context)
@@ -29,7 +30,7 @@ class ConfigRouterKt(context: Context, val restApi: RestApiKt) {
 
     suspend fun getFolders(): List<Folder> {
         return try {
-            restApi.getFolders()
+            restApi.folders.getFolders()
         } catch (e: Exception) {
             Log.e("ConfigRouterKt", "Failed request!", e)
             configXml.loadConfig()
@@ -81,7 +82,7 @@ class ConfigRouterKt(context: Context, val restApi: RestApiKt) {
             fsWatcherEnabled = fsWatcherEnabled,
             fsWatcherDelayS = fsWatcherDelayS,
             sharedWithDevices = sharedWithDevices.map { javaSharedWithDevice ->
-                KotlinSharedWithDevice(
+                SharedWithDevice(
                     deviceID = javaSharedWithDevice.deviceID,
                     introducedBy = javaSharedWithDevice.introducedBy ?: "",
                     encryptionPassword = javaSharedWithDevice.encryptionPassword ?: ""
@@ -128,6 +129,13 @@ class ConfigRouterKt(context: Context, val restApi: RestApiKt) {
             sendOwnership = sendOwnership ?: false,
             syncXattrs = syncXattrs ?: false,
             sendXattrs = sendXattrs ?: false,
-            invalid = invalid
+            invalid = invalid,
+            devices = sharedWithDevices?.mapNotNull { it?.toKotlin() } ?: emptyList(),
         )
+
+    private fun JavaSharedWithDevice.toKotlin() = SharedWithDevice(
+        deviceID = deviceID,
+        introducedBy = introducedBy ?: "",
+        encryptionPassword = encryptionPassword ?: ""
+    )
 }

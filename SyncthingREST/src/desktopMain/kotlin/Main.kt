@@ -1,6 +1,5 @@
 
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import syncthingrest.DesktopSslSettings
 import syncthingrest.RestApiKt
@@ -13,11 +12,15 @@ suspend fun main() {
         sslSettings = DesktopSslSettings()
     )
 
-    val devices = api.loadDevices()
+    val folders = api.folders.getFolders()
     val json = Json {
         prettyPrint = true
         prettyPrintIndent = "  "
         encodeDefaults = true
     }
-    println(json.encodeToString(devices))
+    println(json.encodeToString(folders))
+
+    val firstFolder = folders.first()
+    val patchedFolderResponse = api.folders.updateFolder(firstFolder.copy(label = "Fuckery"))
+    println(patchedFolderResponse)
 }

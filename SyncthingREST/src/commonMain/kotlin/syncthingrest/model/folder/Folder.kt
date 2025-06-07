@@ -2,6 +2,9 @@ package syncthingrest.model.folder
 
 import kotlinx.serialization.Serializable
 import syncthingrest.model.device.SharedWithDevice
+import syncthingrest.model.xattr.XattrFilter
+
+const val FILENAME_STFOLDER = ".stfolder"
 
 /**
  * Sources:
@@ -16,8 +19,10 @@ data class Folder(
     var filesystemType: String = "basic",
     var path: String,
     var type: FolderType = FolderType.SEND_RECEIVE,
+    val devices: List<SharedWithDevice> = emptyList(),
     var fsWatcherEnabled: Boolean = true,
     var fsWatcherDelayS: Float = 10f,
+    var fsWatcherTimeoutS: Float = 0f,
     val sharedWithDevices: MutableList<SharedWithDevice> = mutableListOf(),
 
     /**
@@ -41,7 +46,7 @@ data class Folder(
     var disableTempIndexes: Boolean = false,
     var paused: Boolean = false,
     var weakHashThresholdPct: Int = 25,
-//    var markerName: String = Constants.FILENAME_STFOLDER, TODO
+    var markerName: String = FILENAME_STFOLDER,
 
     // Since v1.1.0, see Issue #5445, PR #5479
     var copyOwnershipFromParent: Boolean = false,
@@ -66,6 +71,7 @@ data class Folder(
     // Since v1.9.0
     // see https://github.com/syncthing/syncthing/commit/932d8c69de9e34824ecc4d5de0a482dfdb71936e
     var caseSensitiveFS: Boolean = false,
+    var junctionsAsDirs: Boolean = false,
 
     // Since v1.21.0
     var syncOwnership: Boolean = false,
@@ -74,6 +80,8 @@ data class Folder(
     // Since v1.22.0
     var syncXattrs: Boolean = false,
     var sendXattrs: Boolean = false,
+
+    var xattrFilter: XattrFilter = XattrFilter(),
 
     // Folder Status
     var invalid: String? = null,

@@ -12,9 +12,9 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import syncthingrest.api.FoldersApi
 import syncthingrest.logging.Logger
 import syncthingrest.model.device.Device
-import syncthingrest.model.folder.Folder
 import javax.net.ssl.X509TrustManager
 
 
@@ -30,7 +30,6 @@ class RestApiKt(
             json(Json {
                 prettyPrint = true
                 isLenient = true
-                ignoreUnknownKeys = true // Important for evolving APIs
             })
         }
         install(Logging)
@@ -47,6 +46,8 @@ class RestApiKt(
         }
     }
 
+    val folders = FoldersApi(restApi = this)
+
     suspend fun loadDevices(): List<Device> { // Return type uses Kotlin Device
         return try {
             logger.d(TAG, "Attempting to load devices from /rest/config/devices")
@@ -58,20 +59,6 @@ class RestApiKt(
             emptyList() // Return an empty list or rethrow a custom domain-specific exception
         }
     }
-
-    suspend fun getFolders(): List<Folder> {
-        return try {
-            logger.d(TAG, "Attempting to load folders from /rest/config/folders")
-            val folders = client.get("rest/config/folders").body<List<Folder>>()
-            logger.i(TAG, "Successfully loaded ${folders.size} folders")
-            folders
-        } catch (e: Exception) {
-            logger.e(TAG, "Failed to load folders: ${e.message}", e)
-            emptyList()
-        }
-    }
-
-    // Placeholder for other API methods, e.g., loadFolders, getStatus, etc.
 
     companion object {
         private const val TAG = "RestApiKt"
