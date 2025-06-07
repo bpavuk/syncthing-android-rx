@@ -1,6 +1,6 @@
 
+import kotlinx.coroutines.flow.merge
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.Json
 import syncthingrest.DesktopSslSettings
 import syncthingrest.RestApiKt
 
@@ -12,15 +12,13 @@ suspend fun main() {
         sslSettings = DesktopSslSettings()
     )
 
-    val folders = api.folders.getFolders()
-    val json = Json {
-        prettyPrint = true
-        prettyPrintIndent = "  "
-        encodeDefaults = true
+    merge(
+        api.devices.deviceConnectedEventFlow,
+        api.devices.deviceDisconnectedEventFlow,
+        api.devices.deviceDiscoveredEventFlow,
+        api.devices.deviceResumedEventFlow,
+        api.folders.folderCompletionEventFlow
+    ).collect {
+        println(it)
     }
-    println(json.encodeToString(folders))
-
-    val firstFolder = folders.first()
-    val patchedFolderResponse = api.folders.updateFolder(firstFolder.copy(label = "Fuckery"))
-    println(patchedFolderResponse)
 }
