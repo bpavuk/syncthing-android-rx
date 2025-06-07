@@ -17,7 +17,7 @@ class ConfigRouterKt(context: Context, val restApi: RestApiKt) {
 
     suspend fun loadDevices(): List<Device> {
         return try {
-            restApi.loadDevices()
+            restApi.devices.loadDevices()
         } catch (e: Exception) {
             Log.e("ConfigRouterKt", "Failed request!", e)
             configXml.loadConfig()
