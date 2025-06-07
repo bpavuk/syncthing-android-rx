@@ -4,13 +4,16 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,7 +25,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.nutomic.syncthingandroid.R
-import com.nutomic.syncthingandroid.ui.common.progressBar.ProgressBar
+import com.nutomic.syncthingandroid.ui.theme.SyncthingandroidTheme
 
 data class FolderState(
     val state: FolderSyncState,
@@ -86,7 +89,7 @@ fun FolderCard(
                 )
             }
             Icon(
-                Icons.Default.Folder,
+                imageVector = Icons.Default.Folder,
                 contentDescription = null
             )
         }
@@ -97,13 +100,23 @@ fun FolderCard(
             FolderSyncState.Scanning -> R.string.state_scanning
             FolderSyncState.UpToDate -> R.string.state_up_to_date
         }
-        Text(text = stringResource(id = stateLabel), )
+        Text(text = stringResource(id = stateLabel))
 
         if (folder.state is FolderSyncState.InProgress) {
-            ProgressBar(
-                progress = folder.state.progress,
-                modifier = Modifier.fillMaxWidth()
-            )
+            Box(
+                modifier = Modifier.padding(
+                    top = 8.dp,
+                    start = 8.dp,
+                    end = 8.dp
+                )
+            ) {
+                LinearProgressIndicator(
+                    progress = { folder.state.progress },
+                    modifier = Modifier
+                        .height(16.dp)
+                        .fillMaxWidth()
+                )
+            }
         }
     }
 }
@@ -111,5 +124,67 @@ fun FolderCard(
 @Preview
 @Composable
 private fun FolderCardUpToDatePreview() {
+    SyncthingandroidTheme {
+        FolderCard(
+            folder = FolderState(
+                state = FolderSyncState.UpToDate,
+                view = FolderCardDataView(
+                    label = "My Synced Folder",
+                    path = "/storage/emulated/0/Sync",
+                    paused = false
+                )
+            )
+        )
+    }
+}
 
+@Preview
+@Composable
+private fun FolderCardErrorPreview() {
+    SyncthingandroidTheme {
+        FolderCard(
+            folder = FolderState(
+                state = FolderSyncState.Error,
+                view = FolderCardDataView(
+                    label = "My Synced Folder",
+                    path = "/storage/emulated/0/Sync",
+                    paused = false
+                )
+            )
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun FolderCardInProgressPreview() {
+    SyncthingandroidTheme {
+        FolderCard(
+            folder = FolderState(
+                state = FolderSyncState.InProgress(progress = 0.69f),
+                view = FolderCardDataView(
+                    label = "My Synced Folder",
+                    path = "/storage/emulated/0/Sync",
+                    paused = false
+                )
+            )
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun FolderCardScanningPreview() {
+    SyncthingandroidTheme {
+        FolderCard(
+            folder = FolderState(
+                state = FolderSyncState.Scanning,
+                view = FolderCardDataView(
+                    label = "My Synced Folder",
+                    path = "/storage/emulated/0/Sync",
+                    paused = false
+                )
+            )
+        )
+    }
 }
