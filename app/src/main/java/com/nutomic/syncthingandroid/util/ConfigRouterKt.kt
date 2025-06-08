@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import syncthingrest.RestApiKt
 import syncthingrest.model.device.Device
+import syncthingrest.model.device.DeviceID
 import syncthingrest.model.device.SharedWithDevice
 import syncthingrest.model.folder.Folder
 import syncthingrest.model.folder.FolderType
@@ -43,7 +44,7 @@ class ConfigRouterKt(context: Context, val restApi: RestApiKt) {
 
     private fun JavaDevice.toKotlin(): Device =
         Device(
-            deviceID = deviceID,
+            deviceID = DeviceID(deviceID),
             name = name ?: "",
             addresses = addresses ?: listOf("dynamic"),
             allowedNetworks = emptyList(), // Not available in old Device model
@@ -83,8 +84,8 @@ class ConfigRouterKt(context: Context, val restApi: RestApiKt) {
             fsWatcherDelayS = fsWatcherDelayS,
             sharedWithDevices = sharedWithDevices.map { javaSharedWithDevice ->
                 SharedWithDevice(
-                    deviceID = javaSharedWithDevice.deviceID,
-                    introducedBy = javaSharedWithDevice.introducedBy ?: "",
+                    deviceID = DeviceID(javaSharedWithDevice.deviceID),
+                    introducedBy = DeviceID(javaSharedWithDevice.introducedBy ?: ""),
                     encryptionPassword = javaSharedWithDevice.encryptionPassword ?: ""
                 )
             }.toMutableList(),
@@ -134,8 +135,8 @@ class ConfigRouterKt(context: Context, val restApi: RestApiKt) {
         )
 
     private fun JavaSharedWithDevice.toKotlin() = SharedWithDevice(
-        deviceID = deviceID,
-        introducedBy = introducedBy ?: "",
+        deviceID = DeviceID(deviceID),
+        introducedBy = DeviceID(introducedBy ?: ""),
         encryptionPassword = encryptionPassword ?: ""
     )
 }

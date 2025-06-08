@@ -5,7 +5,7 @@ import syncthingrest.model.folder.IgnoredFolder
 
 @Serializable
 data class Device(
-    val deviceID: String,
+    val deviceID: DeviceID,
     val name: String = "",
     val addresses: List<String> = listOf("dynamic"),
     val compression: String = "metadata",

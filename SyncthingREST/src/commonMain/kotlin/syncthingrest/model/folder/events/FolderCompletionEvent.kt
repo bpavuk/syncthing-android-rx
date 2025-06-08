@@ -2,11 +2,12 @@ package syncthingrest.model.folder.events
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import syncthingrest.model.device.DeviceID
 
 @Serializable
 data class FolderCompletionEventData(
     val completion: Int,
-    val device: String,
+    val device: DeviceID,
     val folder: String,
     val globalBytes: Long,
     val globalItems: Long,

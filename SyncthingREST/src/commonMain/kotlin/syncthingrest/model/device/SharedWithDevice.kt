@@ -4,8 +4,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class SharedWithDevice(
-    var deviceID: String,
-    var introducedBy: String = "",
+    var deviceID: DeviceID,
+    var introducedBy: DeviceID = DeviceID(""),
 
     // Since v1.12.0
     // See https://github.com/syncthing/syncthing/pull/7055
@@ -15,5 +15,5 @@ data class SharedWithDevice(
      * Returns the device name, or the first characters of the ID if the name is empty.
      */
     val displayName: String
-        get() = (if (deviceID.isEmpty()) "" else deviceID.substring(0, 7))
+        get() = (if (deviceID.value.isEmpty()) "" else deviceID.value.substring(0, 7))
 }
