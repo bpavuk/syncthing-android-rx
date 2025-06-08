@@ -7,8 +7,9 @@ import syncthingrest.model.device.Device
 import syncthingrest.model.device.DeviceID
 import syncthingrest.model.device.SharedWithDevice
 import syncthingrest.model.folder.Folder
+import syncthingrest.model.folder.FolderID
 import syncthingrest.model.folder.FolderType
-import syncthingrest.model.folder.IgnoredFolder
+import syncthingrest.model.folder.ObservedFolder
 import com.nutomic.syncthingandroid.model.Device as JavaDevice
 import com.nutomic.syncthingandroid.model.Folder as JavaFolder
 import com.nutomic.syncthingandroid.model.SharedWithDevice as JavaSharedWithDevice
@@ -54,8 +55,8 @@ class ConfigRouterKt(context: Context, val restApi: RestApiKt) {
             introducer = introducer,
             paused = paused,
             ignoredFolders = ignoredFolders?.mapNotNull { ignoredJavaFolder ->
-                IgnoredFolder(
-                    id = ignoredJavaFolder.id ?: return@mapNotNull null,
+                ObservedFolder(
+                    id = FolderID(ignoredJavaFolder.id ?: return@mapNotNull null),
                     label = ignoredJavaFolder.label ?: return@mapNotNull null,
                     time = ignoredJavaFolder.time ?: return@mapNotNull null
                 )
@@ -69,7 +70,7 @@ class ConfigRouterKt(context: Context, val restApi: RestApiKt) {
 
     private fun JavaFolder.toKotlin(): Folder =
         Folder(
-            id = id,
+            id = FolderID(id),
             label = label ?: "",
             filesystemType = filesystemType ?: "basic",
             path = path,

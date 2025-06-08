@@ -1,7 +1,7 @@
 package syncthingrest.model.device
 
 import kotlinx.serialization.Serializable
-import syncthingrest.model.folder.IgnoredFolder
+import syncthingrest.model.folder.ObservedFolder
 
 @Serializable
 data class Device(
@@ -18,7 +18,7 @@ data class Device(
     val autoAcceptFolders: Boolean = false,
     val maxSendKbps: Int = 0,
     val maxRecvKbps: Int = 0,
-    val ignoredFolders: List<IgnoredFolder> = emptyList(),
+    val ignoredFolders: List<ObservedFolder> = emptyList(),
     val maxRequestKiB: Int = 0,
     val untrusted: Boolean = false, // Since v1.12.0
     val remoteGUIPort: Int = 0,

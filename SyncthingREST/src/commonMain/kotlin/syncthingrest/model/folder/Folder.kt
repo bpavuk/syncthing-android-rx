@@ -14,7 +14,7 @@ const val FILENAME_STFOLDER = ".stfolder"
 @Serializable
 data class Folder(
     // Folder Configuration
-    var id: String,
+    var id: FolderID,
     var label: String = "",
     var filesystemType: String = "basic",
     var path: String,
