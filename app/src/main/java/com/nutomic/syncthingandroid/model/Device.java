@@ -4,20 +4,14 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.common.io.BaseEncoding;
-import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-
 import com.nutomic.syncthingandroid.util.Luhn;
 
 import java.lang.System;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 public class Device {
     public String deviceID;
