@@ -7,13 +7,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.nutomic.syncthingandroid.ui.common.device.DeviceCardDataView
+import com.nutomic.syncthingandroid.ui.common.device.DeviceCardState
+import com.nutomic.syncthingandroid.ui.common.device.DeviceCardSyncState
 import com.nutomic.syncthingandroid.util.ConfigRouterKt
 import com.nutomic.syncthingandroid.util.ConfigXml
 import kotlinx.coroutines.launch
-import syncthingrest.model.device.Device
 
 interface DevicesViewModel {
-    val devices: List<Device>
+    val devices: List<DeviceCardState>
 
     fun updateDevices()
 }
@@ -23,13 +25,25 @@ class DevicesViewModelImpl(
     private val configRouter: ConfigRouterKt,
 ) : DevicesViewModel, AndroidViewModel(application) {
 
-    override var devices: List<Device> by mutableStateOf(emptyList())
+    override var devices: List<DeviceCardState> by mutableStateOf(emptyList())
         private set
 
     override fun updateDevices() {
         viewModelScope.launch {
             try {
-                devices = configRouter.loadDevices()
+                devices = configRouter.loadDevices().map { device ->
+                    DeviceCardState(
+                        state = if (device.paused) {
+                            DeviceCardSyncState.Paused
+                        } else {
+                            DeviceCardSyncState.UpToDate
+                        },
+                        view = DeviceCardDataView(
+                            label = device.name,
+                            deviceID = device.deviceID,
+                        )
+                    )
+                }
             } catch (e: ConfigXml.OpenConfigException) {
                 Log.e(
                     TAG,

@@ -1,4 +1,4 @@
-package com.nutomic.syncthingandroid.ui.common.folder
+package com.nutomic.syncthingandroid.ui.common.device
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -26,33 +26,34 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.nutomic.syncthingandroid.R
 import com.nutomic.syncthingandroid.ui.theme.SyncthingandroidTheme
+import syncthingrest.model.device.DeviceID
 
-data class FolderCardState(
-    val state: FolderCardSyncState,
-    val view: FolderCardDataView
+data class DeviceCardState(
+    val state: DeviceCardSyncState,
+    val view: DeviceCardDataView
 )
 
-sealed interface FolderCardSyncState {
-    data object UpToDate : FolderCardSyncState
-    data class InProgress(val progress: Float) : FolderCardSyncState
-    data object Scanning : FolderCardSyncState
-    data object Error : FolderCardSyncState
-    data object Paused : FolderCardSyncState
+sealed interface DeviceCardSyncState {
+    data object UpToDate : DeviceCardSyncState
+    data object Disconnected : DeviceCardSyncState
+    data class InProgress(val progress: Float) : DeviceCardSyncState
+    data object Error : DeviceCardSyncState
+    data object Paused : DeviceCardSyncState
 }
 
-data class FolderCardDataView(
+data class DeviceCardDataView(
     val label: String,
-    val path: String,
+    val deviceID: DeviceID,
 )
 
 @Composable
-fun FolderCard(
-    folder: FolderCardState,
+fun DeviceCard(
+    device: DeviceCardState,
     modifier: Modifier = Modifier,
-    onFolderCardClick: () -> Unit = {}
+    onDeviceCardClick: () -> Unit = {}
 ) {
     val backgroundColor by animateColorAsState(
-        targetValue = if (folder.state is FolderCardSyncState.Error) {
+        targetValue = if (device.state is DeviceCardSyncState.Error) {
             MaterialTheme.colorScheme.errorContainer
         } else {
             MaterialTheme.colorScheme.primaryContainer
@@ -66,7 +67,7 @@ fun FolderCard(
                 shape = MaterialTheme.shapes.extraLarge
             )
             .clip(shape = MaterialTheme.shapes.extraLarge)
-            .clickable(onClick = onFolderCardClick)
+            .clickable(onClick = onDeviceCardClick)
             .padding(16.dp) then modifier,
     ) {
         Row(
@@ -75,13 +76,13 @@ fun FolderCard(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = folder.view.label,
+                    text = device.view.label,
                     style = MaterialTheme.typography.headlineMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = folder.view.path,
+                    text = device.view.deviceID.value,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.tertiary,
                     maxLines = 1,
@@ -89,21 +90,21 @@ fun FolderCard(
                 )
             }
             Icon(
-                imageVector = Icons.Default.Folder,
+                imageVector = Icons.Default.Devices,
                 contentDescription = null
             )
         }
 
-        val stateLabel = when (folder.state) {
-            FolderCardSyncState.Error -> R.string.state_error
-            is FolderCardSyncState.InProgress -> R.string.state_syncing_general
-            FolderCardSyncState.Scanning -> R.string.state_scanning
-            FolderCardSyncState.UpToDate -> R.string.state_up_to_date
-            FolderCardSyncState.Paused -> R.string.state_paused
+        val stateLabel = when (device.state) {
+            DeviceCardSyncState.Error -> R.string.state_error
+            DeviceCardSyncState.Disconnected -> R.string.device_disconnected
+            is DeviceCardSyncState.InProgress -> R.string.state_syncing_general
+            DeviceCardSyncState.UpToDate -> R.string.device_up_to_date
+            DeviceCardSyncState.Paused -> R.string.device_paused
         }
         Text(text = stringResource(id = stateLabel))
 
-        if (folder.state is FolderCardSyncState.InProgress) {
+        if (device.state is DeviceCardSyncState.InProgress) {
             Box(
                 modifier = Modifier.padding(
                     top = 8.dp,
@@ -112,7 +113,7 @@ fun FolderCard(
                 )
             ) {
                 LinearProgressIndicator(
-                    progress = { folder.state.progress },
+                    progress = { device.state.progress },
                     modifier = Modifier
                         .height(16.dp)
                         .fillMaxWidth()
@@ -124,14 +125,14 @@ fun FolderCard(
 
 @Preview
 @Composable
-private fun FolderCardUpToDatePreview() {
+private fun DeviceCardUpToDatePreview() {
     SyncthingandroidTheme {
-        FolderCard(
-            folder = FolderCardState(
-                state = FolderCardSyncState.UpToDate,
-                view = FolderCardDataView(
-                    label = "My Synced Folder",
-                    path = "/storage/emulated/0/Sync",
+        DeviceCard(
+            device = DeviceCardState(
+                state = DeviceCardSyncState.UpToDate,
+                view = DeviceCardDataView(
+                    label = "My Android Device",
+                    deviceID = DeviceID("ABCD123-EFGH456-IJKL789-MNOP012-QRST345-UVWX678-YZAB901"),
                 )
             )
         )
@@ -140,14 +141,14 @@ private fun FolderCardUpToDatePreview() {
 
 @Preview
 @Composable
-private fun FolderCardErrorPreview() {
+private fun DeviceCardErrorPreview() {
     SyncthingandroidTheme {
-        FolderCard(
-            folder = FolderCardState(
-                state = FolderCardSyncState.Error,
-                view = FolderCardDataView(
-                    label = "My Synced Folder",
-                    path = "/storage/emulated/0/Sync",
+        DeviceCard(
+            device = DeviceCardState(
+                state = DeviceCardSyncState.Error,
+                view = DeviceCardDataView(
+                    label = "My Linux Server",
+                    deviceID = DeviceID("ABCD123-EFGH456-IJKL789-MNOP012-QRST345-UVWX678-YZAB901"),
                 )
             )
         )
@@ -156,14 +157,14 @@ private fun FolderCardErrorPreview() {
 
 @Preview
 @Composable
-private fun FolderCardInProgressPreview() {
+private fun DeviceCardInProgressPreview() {
     SyncthingandroidTheme {
-        FolderCard(
-            folder = FolderCardState(
-                state = FolderCardSyncState.InProgress(progress = 0.69f),
-                view = FolderCardDataView(
-                    label = "My Synced Folder",
-                    path = "/storage/emulated/0/Sync",
+        DeviceCard(
+            device = DeviceCardState(
+                state = DeviceCardSyncState.InProgress(progress = 0.42f),
+                view = DeviceCardDataView(
+                    label = "My Windows PC",
+                    deviceID = DeviceID("ABCD123-EFGH456-IJKL789-MNOP012-QRST345-UVWX678-YZAB901"),
                 )
             )
         )
@@ -172,14 +173,14 @@ private fun FolderCardInProgressPreview() {
 
 @Preview
 @Composable
-private fun FolderCardScanningPreview() {
+private fun DeviceCardDisconnectedPreview() {
     SyncthingandroidTheme {
-        FolderCard(
-            folder = FolderCardState(
-                state = FolderCardSyncState.Scanning,
-                view = FolderCardDataView(
-                    label = "My Synced Folder",
-                    path = "/storage/emulated/0/Sync",
+        DeviceCard(
+            device = DeviceCardState(
+                state = DeviceCardSyncState.Disconnected,
+                view = DeviceCardDataView(
+                    label = "My macOS Laptop",
+                    deviceID = DeviceID("ABCD123-EFGH456-IJKL789-MNOP012-QRST345-UVWX678-YZAB901"),
                 )
             )
         )
@@ -188,14 +189,14 @@ private fun FolderCardScanningPreview() {
 
 @Preview
 @Composable
-private fun FolderCardPausedPreview() {
+private fun DeviceCardPausedPreview() {
     SyncthingandroidTheme {
-        FolderCard(
-            folder = FolderCardState(
-                state = FolderCardSyncState.Paused,
-                view = FolderCardDataView(
-                    label = "My Synced Folder",
-                    path = "/storage/emulated/0/Sync",
+        DeviceCard(
+            device = DeviceCardState(
+                state = DeviceCardSyncState.Paused,
+                view = DeviceCardDataView(
+                    label = "My Android Device (Paused)",
+                    deviceID = DeviceID("ABCD123-EFGH456-IJKL789-MNOP012-QRST345-UVWX678-YZAB901"),
                 )
             )
         )

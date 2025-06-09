@@ -46,10 +46,9 @@ class FoldersViewModelImpl(
 
 // TODO: make it more robust once events are implemented
 private fun Folder.toFolderState(): FolderCardState = FolderCardState(
-    state = FolderCardSyncState.UpToDate,
+    state = if (paused) FolderCardSyncState.Paused else FolderCardSyncState.UpToDate,
     view = FolderCardDataView(
         label = label,
         path = path,
-        paused = paused
     )
 )
