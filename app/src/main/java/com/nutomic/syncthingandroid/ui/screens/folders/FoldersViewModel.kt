@@ -6,14 +6,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.nutomic.syncthingandroid.ui.common.folder.FolderCardDataView
-import com.nutomic.syncthingandroid.ui.common.folder.FolderState
-import com.nutomic.syncthingandroid.ui.common.folder.FolderSyncState
+import com.nutomic.syncthingandroid.ui.common.folder.FolderCardState
+import com.nutomic.syncthingandroid.ui.common.folder.FolderCardSyncState
 import com.nutomic.syncthingandroid.util.ConfigRouterKt
 import com.nutomic.syncthingandroid.util.ConfigXml
 import syncthingrest.model.folder.Folder
 
 interface FoldersViewModel {
-    val folders: List<FolderState>
+    val folders: List<FolderCardState>
 
     suspend fun retrieveFolders()
 }
@@ -22,7 +22,7 @@ class FoldersViewModelImpl(
     private val configRouter: ConfigRouterKt,
 ) : FoldersViewModel, ViewModel() {
 
-    override var folders: List<FolderState> by mutableStateOf(emptyList())
+    override var folders: List<FolderCardState> by mutableStateOf(emptyList())
         private set
 
     override suspend fun retrieveFolders() {
@@ -45,8 +45,8 @@ class FoldersViewModelImpl(
 }
 
 // TODO: make it more robust once events are implemented
-private fun Folder.toFolderState(): FolderState = FolderState(
-    state = FolderSyncState.UpToDate,
+private fun Folder.toFolderState(): FolderCardState = FolderCardState(
+    state = FolderCardSyncState.UpToDate,
     view = FolderCardDataView(
         label = label,
         path = path,

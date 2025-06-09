@@ -32,7 +32,7 @@ fun DevicesScreen(
         } else {
             for (device in devices) {
                 Text(device.name)
-                Text(device.deviceID)
+                Text(device.deviceID.value)
                 Spacer(Modifier.size(8.dp))
             }
         }

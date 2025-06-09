@@ -27,16 +27,16 @@ import androidx.compose.ui.unit.dp
 import com.nutomic.syncthingandroid.R
 import com.nutomic.syncthingandroid.ui.theme.SyncthingandroidTheme
 
-data class FolderState(
-    val state: FolderSyncState,
+data class FolderCardState(
+    val state: FolderCardSyncState,
     val view: FolderCardDataView
 )
 
-sealed interface FolderSyncState {
-    data object UpToDate : FolderSyncState
-    data class InProgress(val progress: Float) : FolderSyncState
-    data object Scanning : FolderSyncState
-    data object Error : FolderSyncState
+sealed interface FolderCardSyncState {
+    data object UpToDate : FolderCardSyncState
+    data class InProgress(val progress: Float) : FolderCardSyncState
+    data object Scanning : FolderCardSyncState
+    data object Error : FolderCardSyncState
 }
 
 data class FolderCardDataView(
@@ -47,12 +47,12 @@ data class FolderCardDataView(
 
 @Composable
 fun FolderCard(
-    folder: FolderState,
+    folder: FolderCardState,
     modifier: Modifier = Modifier,
     onFolderCardClick: () -> Unit = {}
 ) {
     val backgroundColor by animateColorAsState(
-        targetValue = if (folder.state is FolderSyncState.Error) {
+        targetValue = if (folder.state is FolderCardSyncState.Error) {
             MaterialTheme.colorScheme.errorContainer
         } else {
             MaterialTheme.colorScheme.primaryContainer
@@ -95,14 +95,14 @@ fun FolderCard(
         }
 
         val stateLabel = when (folder.state) {
-            FolderSyncState.Error -> R.string.state_error
-            is FolderSyncState.InProgress -> R.string.state_syncing_general
-            FolderSyncState.Scanning -> R.string.state_scanning
-            FolderSyncState.UpToDate -> R.string.state_up_to_date
+            FolderCardSyncState.Error -> R.string.state_error
+            is FolderCardSyncState.InProgress -> R.string.state_syncing_general
+            FolderCardSyncState.Scanning -> R.string.state_scanning
+            FolderCardSyncState.UpToDate -> R.string.state_up_to_date
         }
         Text(text = stringResource(id = stateLabel))
 
-        if (folder.state is FolderSyncState.InProgress) {
+        if (folder.state is FolderCardSyncState.InProgress) {
             Box(
                 modifier = Modifier.padding(
                     top = 8.dp,
@@ -126,8 +126,8 @@ fun FolderCard(
 private fun FolderCardUpToDatePreview() {
     SyncthingandroidTheme {
         FolderCard(
-            folder = FolderState(
-                state = FolderSyncState.UpToDate,
+            folder = FolderCardState(
+                state = FolderCardSyncState.UpToDate,
                 view = FolderCardDataView(
                     label = "My Synced Folder",
                     path = "/storage/emulated/0/Sync",
@@ -143,8 +143,8 @@ private fun FolderCardUpToDatePreview() {
 private fun FolderCardErrorPreview() {
     SyncthingandroidTheme {
         FolderCard(
-            folder = FolderState(
-                state = FolderSyncState.Error,
+            folder = FolderCardState(
+                state = FolderCardSyncState.Error,
                 view = FolderCardDataView(
                     label = "My Synced Folder",
                     path = "/storage/emulated/0/Sync",
@@ -160,8 +160,8 @@ private fun FolderCardErrorPreview() {
 private fun FolderCardInProgressPreview() {
     SyncthingandroidTheme {
         FolderCard(
-            folder = FolderState(
-                state = FolderSyncState.InProgress(progress = 0.69f),
+            folder = FolderCardState(
+                state = FolderCardSyncState.InProgress(progress = 0.69f),
                 view = FolderCardDataView(
                     label = "My Synced Folder",
                     path = "/storage/emulated/0/Sync",
@@ -177,8 +177,8 @@ private fun FolderCardInProgressPreview() {
 private fun FolderCardScanningPreview() {
     SyncthingandroidTheme {
         FolderCard(
-            folder = FolderState(
-                state = FolderSyncState.Scanning,
+            folder = FolderCardState(
+                state = FolderCardSyncState.Scanning,
                 view = FolderCardDataView(
                     label = "My Synced Folder",
                     path = "/storage/emulated/0/Sync",
