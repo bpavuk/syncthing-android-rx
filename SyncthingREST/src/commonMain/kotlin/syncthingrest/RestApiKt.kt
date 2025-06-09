@@ -29,6 +29,7 @@ class RestApiKt(
             json(Json {
                 prettyPrint = true
                 isLenient = true
+                encodeDefaults = true
             })
         }
 //        install(Logging)
@@ -56,6 +57,7 @@ class RestApiKt(
         private const val TAG = "RestApiKt"
     }
 }
+
 expect interface SslSettings {
     fun getTrustManager(): X509TrustManager
 }

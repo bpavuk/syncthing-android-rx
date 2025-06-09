@@ -18,29 +18,31 @@ class ConfigRouterKt(context: Context, val restApi: RestApiKt) {
     private val configXml = ConfigXml(context)
 
     suspend fun loadDevices(): List<Device> {
-        return try {
-            restApi.devices.loadDevices()
-        } catch (e: Exception) {
-            Log.e("ConfigRouterKt", "Failed request!", e)
-            configXml.loadConfig()
-            val javaDevices = configXml.getDevices(true)
-            javaDevices.map {
-                it.toKotlin()
+        return restApi.devices.getDevices().fold(
+            onSuccess = { it },
+            onFailure = { e ->
+                Log.e("ConfigRouterKt", "Failed request!", e)
+                configXml.loadConfig()
+                val javaDevices = configXml.getDevices(true)
+                javaDevices.map {
+                    it.toKotlin()
+                }
             }
-        }
+        )
     }
 
     suspend fun getFolders(): List<Folder> {
-        return try {
-            restApi.folders.getFolders()
-        } catch (e: Exception) {
-            Log.e("ConfigRouterKt", "Failed request!", e)
-            configXml.loadConfig()
-            val javaFolders = configXml.folders
-            javaFolders.map {
-                it.toKotlin()
+        return restApi.folders.getFolders().fold(
+            onSuccess = { it },
+            onFailure = { e ->
+                Log.e("ConfigRouterKt", "Failed request!", e)
+                configXml.loadConfig()
+                val javaFolders = configXml.folders
+                javaFolders.map {
+                    it.toKotlin()
+                }
             }
-        }
+        )
     }
 
     private fun JavaDevice.toKotlin(): Device =
