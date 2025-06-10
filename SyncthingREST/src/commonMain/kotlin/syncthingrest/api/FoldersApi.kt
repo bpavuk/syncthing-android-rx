@@ -3,6 +3,7 @@ package syncthingrest.api
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
+import io.ktor.client.request.patch
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.http.HttpStatusCode
@@ -96,4 +97,32 @@ class FoldersApi(
             Result.failure(e)
         }
     }
+
+    suspend fun pauseFolder(id: FolderID): Result<Unit> {
+        return try {
+            restApi.client.patch("rest/config/folders/${id.value}") {
+                setBody(mapOf("paused" to true))
+            }.body<String>()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            logger.e(TAG, "Failed to pause folder ${id.value}: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
+
+    suspend fun pauseFolder(folder: Folder): Result<Unit> = pauseFolder(folder.id)
+
+    suspend fun resumeFolder(id: FolderID): Result<Unit> {
+        return try {
+            restApi.client.patch("rest/config/folders/${id.value}") {
+                setBody(mapOf("paused" to false))
+            }.body<String>()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            logger.e(TAG, "Failed to resume folder ${id.value}: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
+
+    suspend fun resumeFolder(folder: Folder): Result<Unit> = resumeFolder(folder.id)
 }

@@ -3,6 +3,7 @@ package syncthingrest.api
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
+import io.ktor.client.request.patch
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.http.HttpStatusCode
@@ -107,4 +108,32 @@ class DevicesApi(
             Result.failure(e)
         }
     }
+
+    suspend fun pauseDevice(id: DeviceID): Result<Unit> {
+        return try {
+            restApi.client.patch("rest/config/devices/${id.value}") {
+                setBody(mapOf("paused" to true))
+            }.body<String>()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            logger.e(TAG, "Failed to pause device ${id.value}: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
+
+    suspend fun pauseDevice(device: Device): Result<Unit> = pauseDevice(device.deviceID)
+
+    suspend fun resumeDevice(id: DeviceID): Result<Unit> {
+        return try {
+            restApi.client.patch("rest/config/devices/${id.value}") {
+                setBody(mapOf("paused" to false))
+            }.body<String>()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            logger.e(TAG, "Failed to resume device ${id.value}: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
+
+    suspend fun resumeDevice(device: Device): Result<Unit> = resumeDevice(device.deviceID)
 }
