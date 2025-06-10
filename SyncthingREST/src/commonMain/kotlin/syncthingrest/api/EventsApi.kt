@@ -5,6 +5,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.http.path
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import syncthingrest.RestApiKt
 import syncthingrest.logging.Logger
@@ -23,9 +24,15 @@ class EventsApi(
         "DeviceDiscovered",
         "DeviceResumed",
         "FolderCompletion",
+        "FolderErrors",
+        "FolderPaused",
+        "FolderResumed",
+        "FolderScanProgress",
+        "FolderSummary",
+        "FolderWatchStateChanged",
     )
 
-    val eventsFlow = flow {
+    val eventsFlow: Flow<Event<EventData>> = flow {
         var lastSeenId = 0
         while (true) {
             try {
@@ -40,7 +47,7 @@ class EventsApi(
 
                 val events = eventResponse.body<List<Event<EventData>>>().sortedBy { it.id }
                 events.lastOrNull()?.id?.let { lastSeenId = it }
-                if (events.isNotEmpty()) emit(events)
+                if (events.isNotEmpty()) events.forEach { emit(it) }
             } catch (e: Exception) {
                 logger.e(TAG, "Failed to get an Event: ${e.message}", e)
             } finally {

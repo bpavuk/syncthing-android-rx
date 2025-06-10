@@ -7,7 +7,7 @@ import io.ktor.client.request.patch
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.http.HttpStatusCode
-import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.filterIsInstance
 import syncthingrest.RestApiKt
 import syncthingrest.logging.Logger
 import syncthingrest.model.device.Device
@@ -22,18 +22,11 @@ class DevicesApi(
     eventsApi: EventsApi,
     private val logger: Logger = Logger,
 ) {
-    val deviceConnectedEventFlow = eventsApi.eventsFlow.mapNotNull { events ->
-        events.filterIsInstance<DeviceConnectedEvent>().ifEmpty { null }
-    }
-    val deviceDisconnectedEventFlow = eventsApi.eventsFlow.mapNotNull { events ->
-        events.filterIsInstance<DeviceDisconnectedEvent>().ifEmpty { null }
-    }
-    val deviceDiscoveredEventFlow = eventsApi.eventsFlow.mapNotNull { events ->
-        events.filterIsInstance<DeviceDiscoveredEvent>().ifEmpty { null }
-    }
-    val deviceResumedEventFlow = eventsApi.eventsFlow.mapNotNull { events ->
-        events.filterIsInstance<DeviceResumedEvent>().ifEmpty { null }
-    }
+    val deviceConnectedEventFlow = eventsApi.eventsFlow.filterIsInstance<DeviceConnectedEvent>()
+    val deviceDisconnectedEventFlow =
+        eventsApi.eventsFlow.filterIsInstance<DeviceDisconnectedEvent>()
+    val deviceDiscoveredEventFlow = eventsApi.eventsFlow.filterIsInstance<DeviceDiscoveredEvent>()
+    val deviceResumedEventFlow = eventsApi.eventsFlow.filterIsInstance<DeviceResumedEvent>()
 
     companion object {
         private const val TAG = "DevicesApi"

@@ -7,21 +7,39 @@ import io.ktor.client.request.patch
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.http.HttpStatusCode
-import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.filterIsInstance
 import syncthingrest.RestApiKt
 import syncthingrest.logging.Logger
 import syncthingrest.model.folder.Folder
 import syncthingrest.model.folder.FolderID
 import syncthingrest.model.folder.events.FolderCompletionEvent
+import syncthingrest.model.folder.events.FolderErrorsEvent
+import syncthingrest.model.folder.events.FolderPausedEvent
+import syncthingrest.model.folder.events.FolderResumedEvent
+import syncthingrest.model.folder.events.FolderScanProgressEvent
+import syncthingrest.model.folder.events.FolderSummaryEvent
+import syncthingrest.model.folder.events.FolderWatchStateChangedEvent
 
 class FoldersApi(
     private val restApi: RestApiKt,
     eventsApi: EventsApi,
     private val logger: Logger = Logger
 ) {
-    val folderCompletionEventFlow = eventsApi.eventsFlow.mapNotNull { events ->
-        events.filterIsInstance<FolderCompletionEvent>().ifEmpty { null }
-    }
+    val folderCompletionEventFlow = eventsApi.eventsFlow.filterIsInstance<FolderCompletionEvent>()
+
+    val folderErrorsEventFlow = eventsApi.eventsFlow.filterIsInstance<FolderErrorsEvent>()
+
+    val folderPausedEventFlow = eventsApi.eventsFlow.filterIsInstance<FolderPausedEvent>()
+
+    val folderResumedEventFlow = eventsApi.eventsFlow.filterIsInstance<FolderResumedEvent>()
+
+    val folderScanProgressEventFlow =
+        eventsApi.eventsFlow.filterIsInstance<FolderScanProgressEvent>()
+
+    val folderSummaryEventFlow = eventsApi.eventsFlow.filterIsInstance<FolderSummaryEvent>()
+
+    val folderWatchStateChangedEventFlow =
+        eventsApi.eventsFlow.filterIsInstance<FolderWatchStateChangedEvent>()
 
     companion object {
         private const val TAG = "FoldersApi"

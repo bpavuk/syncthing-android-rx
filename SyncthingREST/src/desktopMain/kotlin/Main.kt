@@ -34,7 +34,13 @@ suspend fun main() {
         api.devices.deviceDisconnectedEventFlow,
         api.devices.deviceDiscoveredEventFlow,
         api.devices.deviceResumedEventFlow,
-        api.folders.folderCompletionEventFlow
+        api.folders.folderCompletionEventFlow,
+        api.folders.folderErrorsEventFlow,
+        api.folders.folderPausedEventFlow,
+        api.folders.folderResumedEventFlow,
+        api.folders.folderScanProgressEventFlow,
+        api.folders.folderSummaryEventFlow,
+        api.folders.folderWatchStateChangedEventFlow
     ).collect {
         println(it)
     }
