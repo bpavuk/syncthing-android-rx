@@ -45,6 +45,29 @@ class ConfigRouterKt(context: Context, val restApi: RestApiKt) {
         )
     }
 
+    suspend fun getFolder(folderId: FolderID): Folder? {
+        return restApi.folders.getFolder(folderId).fold(
+            onSuccess = { it },
+            onFailure = { e ->
+                Log.e("ConfigRouterKt", "Failed request!", e)
+                configXml.loadConfig()
+                configXml.folders?.firstOrNull { it.id == folderId.value }?.toKotlin()
+            }
+        )
+    }
+
+    suspend fun updateFolder(folder: Folder) {
+        restApi.folders.updateFolder(folder).fold(
+            onSuccess = { it },
+            onFailure = { e ->
+                Log.e("ConfigRouterKt", "Failed request!", e)
+                configXml.loadConfig()
+                configXml.updateFolder(folder.toJava())
+                configXml.saveChanges()
+            }
+        )
+    }
+
     private fun JavaDevice.toKotlin(): Device =
         Device(
             deviceID = DeviceID(deviceID),
@@ -142,4 +165,72 @@ class ConfigRouterKt(context: Context, val restApi: RestApiKt) {
         introducedBy = DeviceID(introducedBy ?: ""),
         encryptionPassword = encryptionPassword ?: ""
     )
+
+    private fun Folder.toJava(): JavaFolder =
+        JavaFolder().also { java ->
+            java.id = id.value
+            java.paused = paused
+            java.label = label
+            java.type = type.apiName
+            java.path = path
+            java.fsWatcherDelayS = fsWatcherDelayS
+            java.autoNormalize = autoNormalize
+            java.blockPullOrder = blockPullOrder
+            java.caseSensitiveFS = caseSensitiveFS
+            java.copyOwnershipFromParent = copyOwnershipFromParent
+            java.copiers = copiers
+            java.copyRangeMethod = copyRangeMethod
+            java.disableFsync = disableFsync
+            java.disableSparseFiles = disableSparseFiles
+            java.disableTempIndexes = disableTempIndexes
+            java.filesystemType = filesystemType
+            java.fsWatcherEnabled = fsWatcherEnabled
+            java.hashers = hashers
+            java.ignoreDelete = ignoreDelete
+            java.ignorePerms = ignorePerms
+            java.invalid = invalid
+            java.markerName = markerName
+            java.maxConcurrentWrites = maxConcurrentWrites
+            java.maxConflicts = maxConflicts
+            java.minDiskFree = minDiskFree?.toJava() ?: JavaFolder.MinDiskFree()
+            java.modTimeWindowS = modTimeWindowS
+            java.order = order
+            java.pullerMaxPendingKiB = pullerMaxPendingKiB
+            java.pullerPauseS = pullerPauseS
+            java.rescanIntervalS = rescanIntervalS
+            java.scanProgressIntervalS = scanProgressIntervalS
+            java.sendOwnership = sendOwnership
+            java.sendXattrs = sendXattrs
+            java.syncOwnership = syncOwnership
+            java.caseSensitiveFS = caseSensitiveFS
+            java.syncXattrs = syncXattrs
+            java.blockPullOrder = blockPullOrder
+            java.versioning = versioning?.toJava()
+            java.weakHashThresholdPct = weakHashThresholdPct
+            devices.forEach {
+                java.addDevice(it.toJava())
+            }
+        }
+
+    private fun Folder.MinDiskFree.toJava(): JavaFolder.MinDiskFree =
+        JavaFolder.MinDiskFree().also { java ->
+            java.value = value
+            java.unit = unit
+        }
+
+    private fun Folder.Versioning.toJava(): JavaFolder.Versioning =
+        JavaFolder.Versioning().also { java ->
+            java.type = type
+            java.fsPath = fsPath
+            java.fsType = fsType
+            java.params = params
+            java.cleanupIntervalS = cleanupIntervalS
+        }
+
+    private fun SharedWithDevice.toJava(): JavaSharedWithDevice =
+        JavaSharedWithDevice().also { java ->
+            java.deviceID = deviceID.value
+            java.introducedBy = introducedBy.value
+            java.encryptionPassword = encryptionPassword
+        }
 }
