@@ -21,12 +21,7 @@ val appModule = module {
     single {
         val configXml: ConfigXml = get()
         configXml.loadConfig()
-        var url = configXml.webGuiUrl
-        val urlString = if (url.protocol == "https") {
-            url.toString().replaceFirst("https://", "http://")
-        } else {
-            url.toString()
-        }
+        var urlString = configXml.webGuiUrl.toString()
 
         Log.d("DI", "URL String to communicate with Syncthing: $urlString")
 
