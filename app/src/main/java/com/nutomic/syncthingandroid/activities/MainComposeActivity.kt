@@ -13,6 +13,7 @@ import com.nutomic.syncthingandroid.service.SyncthingServiceBinder
 import com.nutomic.syncthingandroid.ui.SyncthingandroidApp
 import com.nutomic.syncthingandroid.ui.screens.devices.DeviceListViewModelImpl
 import com.nutomic.syncthingandroid.ui.screens.folders.FolderListViewModelImpl
+import com.nutomic.syncthingandroid.ui.screens.folders.FolderSettingsViewModelImpl
 import com.nutomic.syncthingandroid.ui.theme.SyncthingandroidTheme
 import org.koin.core.context.loadKoinModules
 import org.koin.core.module.dsl.viewModel
@@ -28,7 +29,11 @@ class MainComposeActivity : SyncthingActivity() {
         }
         viewModel {
             DeviceListViewModelImpl(
-                application = get(),
+                configRouter = get()
+            )
+        }
+        viewModel {
+            FolderSettingsViewModelImpl(
                 configRouter = get()
             )
         }

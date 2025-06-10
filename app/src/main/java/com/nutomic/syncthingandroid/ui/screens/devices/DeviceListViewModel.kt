@@ -1,13 +1,11 @@
 package com.nutomic.syncthingandroid.ui.screens.devices
 
-import android.app.Application
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.nutomic.syncthingandroid.ui.common.device.DeviceCardDataView
 import com.nutomic.syncthingandroid.ui.common.device.DeviceCardState
 import com.nutomic.syncthingandroid.ui.common.device.DeviceCardSyncState
 import com.nutomic.syncthingandroid.util.ConfigRouterKt
@@ -21,9 +19,8 @@ interface DeviceListViewModel {
 }
 
 class DeviceListViewModelImpl(
-    application: Application,
     private val configRouter: ConfigRouterKt,
-) : DeviceListViewModel, AndroidViewModel(application) {
+) : DeviceListViewModel, ViewModel() {
 
     override var devices: List<DeviceCardState> by mutableStateOf(emptyList())
         private set
@@ -33,15 +30,13 @@ class DeviceListViewModelImpl(
             try {
                 devices = configRouter.loadDevices().map { device ->
                     DeviceCardState(
-                        state = if (device.paused) {
+                        syncState = if (device.paused) {
                             DeviceCardSyncState.Paused
                         } else {
                             DeviceCardSyncState.UpToDate
                         },
-                        view = DeviceCardDataView(
-                            label = device.name,
-                            deviceID = device.deviceID,
-                        )
+                        label = device.name,
+                        deviceID = device.deviceID,
                     )
                 }
             } catch (e: ConfigXml.OpenConfigException) {

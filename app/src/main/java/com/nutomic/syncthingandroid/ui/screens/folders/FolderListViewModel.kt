@@ -48,6 +48,7 @@ class FolderListViewModelImpl(
 private fun Folder.toFolderState(): FolderCardState = FolderCardState(
     state = if (paused) FolderCardSyncState.Paused else FolderCardSyncState.UpToDate,
     view = FolderCardDataView(
+        id = id,
         label = label,
         path = path,
     )

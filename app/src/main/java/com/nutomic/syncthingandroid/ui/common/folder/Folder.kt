@@ -26,6 +26,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.nutomic.syncthingandroid.R
 import com.nutomic.syncthingandroid.ui.theme.SyncthingandroidTheme
+import com.nutomic.syncthingandroid.ui.theme.yellowPrimaryContainer
+import syncthingrest.model.folder.FolderID
 
 data class FolderCardState(
     val state: FolderCardSyncState,
@@ -41,6 +43,7 @@ sealed interface FolderCardSyncState {
 }
 
 data class FolderCardDataView(
+    val id: FolderID,
     val label: String,
     val path: String,
 )
@@ -52,10 +55,10 @@ fun FolderCard(
     onFolderCardClick: () -> Unit = {}
 ) {
     val backgroundColor by animateColorAsState(
-        targetValue = if (folder.state is FolderCardSyncState.Error) {
-            MaterialTheme.colorScheme.errorContainer
-        } else {
-            MaterialTheme.colorScheme.primaryContainer
+        targetValue = when (folder.state) {
+            is FolderCardSyncState.Error -> MaterialTheme.colorScheme.errorContainer
+            is FolderCardSyncState.Paused -> yellowPrimaryContainer()
+            else -> MaterialTheme.colorScheme.primaryContainer
         }
     )
 
@@ -132,6 +135,7 @@ private fun FolderCardUpToDatePreview() {
                 view = FolderCardDataView(
                     label = "My Synced Folder",
                     path = "/storage/emulated/0/Sync",
+                    id = FolderID("who-knows")
                 )
             )
         )
@@ -148,6 +152,7 @@ private fun FolderCardErrorPreview() {
                 view = FolderCardDataView(
                     label = "My Synced Folder",
                     path = "/storage/emulated/0/Sync",
+                    id = FolderID("who-knows")
                 )
             )
         )
@@ -164,6 +169,7 @@ private fun FolderCardInProgressPreview() {
                 view = FolderCardDataView(
                     label = "My Synced Folder",
                     path = "/storage/emulated/0/Sync",
+                    id = FolderID("who-knows")
                 )
             )
         )
@@ -180,6 +186,7 @@ private fun FolderCardScanningPreview() {
                 view = FolderCardDataView(
                     label = "My Synced Folder",
                     path = "/storage/emulated/0/Sync",
+                    id = FolderID("who-knows")
                 )
             )
         )
@@ -196,6 +203,7 @@ private fun FolderCardPausedPreview() {
                 view = FolderCardDataView(
                     label = "My Synced Folder",
                     path = "/storage/emulated/0/Sync",
+                    id = FolderID("who-knows")
                 )
             )
         )
