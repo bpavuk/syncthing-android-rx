@@ -39,6 +39,7 @@ interface FolderSettingsViewModel {
     fun updateFolderName(newName: String)
     fun updateFolderType(newType: FolderSettingsScreenState.UIFolderType)
     fun updateFolderPausedState(isPaused: Boolean)
+    fun deleteFolder()
     fun saveChanges()
 }
 
@@ -94,6 +95,15 @@ class FolderSettingsViewModelImpl(
         val currentUiState = _uiState.value
         if (currentUiState is FolderSettingsScreenState.Success) {
             _uiState.value = currentUiState.copy(paused = isPaused)
+        }
+    }
+
+    override fun deleteFolder() {
+        viewModelScope.launch {
+            val currentUiState = _uiState.value
+            if (currentUiState is FolderSettingsScreenState.Success) {
+                configRouter.deleteFolder(currentUiState.id)
+            }
         }
     }
 

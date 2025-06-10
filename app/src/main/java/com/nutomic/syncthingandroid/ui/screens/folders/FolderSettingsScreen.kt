@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -123,6 +125,9 @@ fun FolderSettingsScreen(
                     val successState = uiState as FolderSettingsScreenState.Success
                     val clipboardManager = LocalClipboard.current
                     val coroutineScope = rememberCoroutineScope()
+                    var showDeletionDialogue by remember {
+                        mutableStateOf(false)
+                    }
 
                     // Folder Path (read-only)
                     Text(
@@ -239,6 +244,73 @@ fun FolderSettingsScreen(
                         Switch(
                             checked = successState.paused,
                             onCheckedChange = null
+                        )
+                    }
+
+                    // Deletion button
+                    Button(
+                        onClick = { showDeletionDialogue = true },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    ) {
+                        Text(stringResource(R.string.delete_folder))
+                    }
+
+                    if (showDeletionDialogue) {
+                        AlertDialog(
+                            icon = {
+                                Icon(
+                                    imageVector = Icons.Default.DeleteForever,
+                                    contentDescription = null
+                                )
+                            },
+                            title = {
+                                Text(
+                                    text = stringResource(R.string.delete_folder)
+                                )
+                            },
+                            text = {
+                                Text(
+                                    text = "Are you sure you want to delete this folder?"
+                                )
+                            },
+                            onDismissRequest = {
+                                showDeletionDialogue = false
+                            },
+                            confirmButton = {
+                                Button(
+                                    onClick = {
+                                        viewModel.deleteFolder()
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.error,
+                                        contentColor = MaterialTheme.colorScheme.onError
+                                    )
+                                ) {
+                                    Text(
+                                        text = "Delete"
+                                    )
+                                }
+                            },
+                            dismissButton = {
+                                OutlinedButton(
+                                    onClick = {
+                                        showDeletionDialogue = false
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                                    )
+                                ) {
+                                    Text(
+                                        text = "Nevermind"
+                                    )
+                                }
+                            },
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                            iconContentColor = MaterialTheme.colorScheme.onErrorContainer
                         )
                     }
                 }

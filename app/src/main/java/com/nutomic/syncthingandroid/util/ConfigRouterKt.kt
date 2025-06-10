@@ -68,6 +68,18 @@ class ConfigRouterKt(context: Context, val restApi: RestApiKt) {
         )
     }
 
+    suspend fun deleteFolder(id: FolderID) {
+        restApi.folders.deleteFolder(id).fold(
+            onSuccess = { it },
+            onFailure = { e ->
+                Log.e("ConfigRouterKt", "Failed request!", e)
+                configXml.loadConfig()
+                configXml.removeFolder(id.value)
+                configXml.saveChanges()
+            }
+        )
+    }
+
     private fun JavaDevice.toKotlin(): Device =
         Device(
             deviceID = DeviceID(deviceID),
