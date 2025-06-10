@@ -39,7 +39,7 @@ class LicenseActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LicenseScreen() {
-    SyncthingandroidTheme { // TODO: replace with a custom Compose theme
+    SyncthingandroidTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
             val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
             val context = LocalContext.current

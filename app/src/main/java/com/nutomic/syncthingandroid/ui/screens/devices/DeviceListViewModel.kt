@@ -14,16 +14,16 @@ import com.nutomic.syncthingandroid.util.ConfigRouterKt
 import com.nutomic.syncthingandroid.util.ConfigXml
 import kotlinx.coroutines.launch
 
-interface DevicesViewModel {
+interface DeviceListViewModel {
     val devices: List<DeviceCardState>
 
     fun updateDevices()
 }
 
-class DevicesViewModelImpl(
+class DeviceListViewModelImpl(
     application: Application,
     private val configRouter: ConfigRouterKt,
-) : DevicesViewModel, AndroidViewModel(application) {
+) : DeviceListViewModel, AndroidViewModel(application) {
 
     override var devices: List<DeviceCardState> by mutableStateOf(emptyList())
         private set
@@ -56,5 +56,5 @@ class DevicesViewModelImpl(
     }
 
     @Suppress("PrivatePropertyName")
-    private val TAG = "DevicesViewModelImpl"
+    private val TAG = "DeviceListViewModelImpl"
 }

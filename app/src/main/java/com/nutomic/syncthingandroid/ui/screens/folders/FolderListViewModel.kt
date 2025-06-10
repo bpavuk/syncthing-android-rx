@@ -12,15 +12,15 @@ import com.nutomic.syncthingandroid.util.ConfigRouterKt
 import com.nutomic.syncthingandroid.util.ConfigXml
 import syncthingrest.model.folder.Folder
 
-interface FoldersViewModel {
+interface FolderListViewModel {
     val folders: List<FolderCardState>
 
     suspend fun retrieveFolders()
 }
 
-class FoldersViewModelImpl(
+class FolderListViewModelImpl(
     private val configRouter: ConfigRouterKt,
-) : FoldersViewModel, ViewModel() {
+) : FolderListViewModel, ViewModel() {
 
     override var folders: List<FolderCardState> by mutableStateOf(emptyList())
         private set
@@ -41,7 +41,7 @@ class FoldersViewModelImpl(
     }
 
     @Suppress("PrivatePropertyName")
-    private val TAG = "FoldersViewModelImpl"
+    private val TAG = "FolderListViewModelImpl"
 }
 
 // TODO: make it more robust once events are implemented

@@ -21,10 +21,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import com.nutomic.syncthingandroid.R
-import com.nutomic.syncthingandroid.ui.screens.devices.DevicesScreen
-import com.nutomic.syncthingandroid.ui.screens.devices.DevicesViewModelImpl
-import com.nutomic.syncthingandroid.ui.screens.folders.FoldersScreen
-import com.nutomic.syncthingandroid.ui.screens.folders.FoldersViewModelImpl
+import com.nutomic.syncthingandroid.ui.screens.devices.DeviceListScreen
+import com.nutomic.syncthingandroid.ui.screens.devices.DeviceListViewModelImpl
+import com.nutomic.syncthingandroid.ui.screens.folders.FolderListScreen
+import com.nutomic.syncthingandroid.ui.screens.folders.FolderListViewModelImpl
 import org.koin.androidx.compose.koinViewModel
 
 @PreviewScreenSizes
@@ -51,13 +51,13 @@ fun SyncthingandroidApp() {
     ) {
         Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
             when (currentDestination) {
-                AppDestinations.FOLDERS -> FoldersScreen(
+                AppDestinations.FOLDERS -> FolderListScreen(
                     modifier = Modifier.padding(innerPadding),
-                    viewModel = koinViewModel<FoldersViewModelImpl>()
+                    viewModel = koinViewModel<FolderListViewModelImpl>()
                 )
-                AppDestinations.DEVICES -> DevicesScreen(
+                AppDestinations.DEVICES -> DeviceListScreen(
                     modifier = Modifier.padding(innerPadding),
-                    viewModel = koinViewModel<DevicesViewModelImpl>()
+                    viewModel = koinViewModel<DeviceListViewModelImpl>()
                 )
 //                AppDestinations.STATUS -> StatusScreen(modifier = Modifier.padding(innerPadding))
                 else -> Text("TODO")
