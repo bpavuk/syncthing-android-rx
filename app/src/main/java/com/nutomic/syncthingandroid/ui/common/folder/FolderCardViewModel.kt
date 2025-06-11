@@ -3,6 +3,7 @@ package com.nutomic.syncthingandroid.ui.common.folder
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nutomic.syncthingandroid.ui.common.folder.FolderCardSyncState.InProgress
 import com.nutomic.syncthingandroid.util.ConfigXml
 import com.nutomic.syncthingandroid.util.configkt.ConfigRouterKt
 import kotlinx.coroutines.CoroutineScope
@@ -45,7 +46,7 @@ class FolderCardViewModelImpl(private val configRouter: ConfigRouterKt) : Folder
     private val folderEventFlow = merge(
         configRouter.folders.folderPausedEventFlow,
         configRouter.folders.folderResumedEventFlow,
-        configRouter.folders.folderCompletionEventFlow
+        configRouter.folders.folderSummaryEventFlow
     )
 
     override fun updateFolder(id: FolderID) {
@@ -87,13 +88,17 @@ class FolderCardViewModelImpl(private val configRouter: ConfigRouterKt) : Folder
             if (currentState is FolderCardState.Success) {
                 val data = event.data
                 when (data) {
-                    is FolderCompletionEventData -> {
-                        Log.d(TAG, "FolderCompletionEvent")
+                    is FolderSummaryEventData -> {
+                        Log.d(TAG, "FolderCompletionEvent, data: $data")
                         _uiState.emit(
                             currentState.copy(
-                                syncState = FolderCardSyncState.InProgress(
-                                    progress = data.completion.toFloat() / 100f
-                                )
+                                syncState = if (data.summary.needBytes == 0L) {
+                                    FolderCardSyncState.UpToDate
+                                } else {
+                                    InProgress(
+                                        progress = (data.summary.globalBytes - data.summary.needBytes).toFloat() / data.summary.globalBytes
+                                    )
+                                }
                             )
                         )
                     }
@@ -114,8 +119,8 @@ class FolderCardViewModelImpl(private val configRouter: ConfigRouterKt) : Folder
                     }
 
                     is FolderScanProgressEventData -> TODO()
-                    is FolderSummaryEventData -> TODO()
                     is FolderWatchStateChangedEventData -> TODO()
+                    is FolderCompletionEventData -> TODO()
                 }
             }
             latestFolderEventId = event.globalID
