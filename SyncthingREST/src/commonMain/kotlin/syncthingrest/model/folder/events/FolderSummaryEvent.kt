@@ -38,7 +38,7 @@ data class FolderSummaryData(
     val receiveOnlyChangedFiles: Long,
     val receiveOnlyChangedSymlinks: Long,
     val receiveOnlyTotalItems: Long,
-    val remoteSequence: Map<DeviceID, Int>,
+    val remoteSequence: Map<DeviceID, Int>?,
     val sequence: Int,
     val state: String,
     val stateChanged: String,
