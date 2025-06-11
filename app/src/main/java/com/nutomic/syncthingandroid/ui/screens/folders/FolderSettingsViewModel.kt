@@ -3,7 +3,7 @@ package com.nutomic.syncthingandroid.ui.screens.folders
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.nutomic.syncthingandroid.util.ConfigRouterKt
+import com.nutomic.syncthingandroid.util.configkt.ConfigRouterKt
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -55,7 +55,7 @@ class FolderSettingsViewModelImpl(
         viewModelScope.launch {
             _uiState.value = FolderSettingsScreenState.Loading
             try {
-                initialFolder = configRouter.getFolder(folderId)
+                initialFolder = configRouter.folders.getFolder(folderId)
                 if (initialFolder != null) {
                     _uiState.emit(
                         value = FolderSettingsScreenState.Success(
@@ -102,7 +102,7 @@ class FolderSettingsViewModelImpl(
         viewModelScope.launch {
             val currentUiState = _uiState.value
             if (currentUiState is FolderSettingsScreenState.Success) {
-                configRouter.deleteFolder(currentUiState.id)
+                configRouter.folders.deleteFolder(currentUiState.id)
             }
         }
     }
@@ -123,7 +123,7 @@ class FolderSettingsViewModelImpl(
             ?: throw IllegalStateException("initialFolder cannot be null when saving changes.")
 
         try {
-            configRouter.updateFolder(updatedFolder)
+            configRouter.folders.updateFolder(updatedFolder)
             initialFolder = updatedFolder // Update initialFolder only on success
         } catch (e: Exception) {
             Log.e(
