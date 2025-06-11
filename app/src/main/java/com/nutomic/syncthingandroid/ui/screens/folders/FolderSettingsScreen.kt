@@ -105,6 +105,7 @@ fun FolderSettingsScreen(
                         CircularProgressIndicator()
                     }
                 }
+
                 FolderSettingsScreenState.FolderNotFound -> {
                     Text(
                         text = stringResource(R.string.folder_list_empty), // Reusing string for "not found"
@@ -113,6 +114,7 @@ fun FolderSettingsScreen(
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     )
                 }
+
                 FolderSettingsScreenState.FailedToLoad -> {
                     Text(
                         text = stringResource(R.string.generic_error),
@@ -121,6 +123,7 @@ fun FolderSettingsScreen(
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     )
                 }
+
                 is FolderSettingsScreenState.Success -> {
                     val successState = uiState as FolderSettingsScreenState.Success
                     val clipboardManager = LocalClipboard.current
@@ -176,7 +179,6 @@ fun FolderSettingsScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
 
-
                     // Folder Type
                     var expanded by remember { mutableStateOf(false) }
                     ExposedDropdownMenuBox(
@@ -187,8 +189,13 @@ fun FolderSettingsScreen(
                         OutlinedTextField(
                             value = when (successState.type) {
                                 FolderSettingsScreenState.UIFolderType.Send -> stringResource(R.string.folder_type_send_only)
-                                FolderSettingsScreenState.UIFolderType.SendReceive -> stringResource(R.string.folder_type_send_receive)
-                                FolderSettingsScreenState.UIFolderType.ReceiveOnly -> stringResource(R.string.folder_type_receive_only)
+                                FolderSettingsScreenState.UIFolderType.SendReceive -> stringResource(
+                                    R.string.folder_type_send_receive
+                                )
+
+                                FolderSettingsScreenState.UIFolderType.ReceiveOnly -> stringResource(
+                                    R.string.folder_type_receive_only
+                                )
                             },
                             onValueChange = { /* Read-only */ },
                             readOnly = true,
@@ -212,9 +219,17 @@ fun FolderSettingsScreen(
                                     text = {
                                         Text(
                                             when (folderType) {
-                                                FolderSettingsScreenState.UIFolderType.Send -> stringResource(R.string.folder_type_send_only)
-                                                FolderSettingsScreenState.UIFolderType.SendReceive -> stringResource(R.string.folder_type_send_receive)
-                                                FolderSettingsScreenState.UIFolderType.ReceiveOnly -> stringResource(R.string.folder_type_receive_only)
+                                                FolderSettingsScreenState.UIFolderType.Send -> stringResource(
+                                                    R.string.folder_type_send_only
+                                                )
+
+                                                FolderSettingsScreenState.UIFolderType.SendReceive -> stringResource(
+                                                    R.string.folder_type_send_receive
+                                                )
+
+                                                FolderSettingsScreenState.UIFolderType.ReceiveOnly -> stringResource(
+                                                    R.string.folder_type_receive_only
+                                                )
                                             }
                                         )
                                     },

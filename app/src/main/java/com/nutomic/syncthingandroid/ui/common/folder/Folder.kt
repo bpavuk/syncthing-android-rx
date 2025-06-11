@@ -30,8 +30,10 @@ import com.nutomic.syncthingandroid.ui.theme.yellowPrimaryContainer
 import syncthingrest.model.folder.FolderID
 
 data class FolderCardState(
-    val state: FolderCardSyncState,
-    val view: FolderCardDataView
+    val syncState: FolderCardSyncState,
+    val id: FolderID,
+    val label: String,
+    val path: String
 )
 
 sealed interface FolderCardSyncState {
@@ -42,12 +44,6 @@ sealed interface FolderCardSyncState {
     data object Paused : FolderCardSyncState
 }
 
-data class FolderCardDataView(
-    val id: FolderID,
-    val label: String,
-    val path: String,
-)
-
 @Composable
 fun FolderCard(
     folder: FolderCardState,
@@ -55,7 +51,7 @@ fun FolderCard(
     onFolderCardClick: () -> Unit = {}
 ) {
     val backgroundColor by animateColorAsState(
-        targetValue = when (folder.state) {
+        targetValue = when (folder.syncState) {
             is FolderCardSyncState.Error -> MaterialTheme.colorScheme.errorContainer
             is FolderCardSyncState.Paused -> yellowPrimaryContainer()
             else -> MaterialTheme.colorScheme.primaryContainer
@@ -78,13 +74,13 @@ fun FolderCard(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = folder.view.label,
+                    text = folder.label,
                     style = MaterialTheme.typography.headlineMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = folder.view.path,
+                    text = folder.path,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.tertiary,
                     maxLines = 1,
@@ -97,7 +93,7 @@ fun FolderCard(
             )
         }
 
-        val stateLabel = when (folder.state) {
+        val stateLabel = when (folder.syncState) {
             FolderCardSyncState.Error -> R.string.state_error
             is FolderCardSyncState.InProgress -> R.string.state_syncing_general
             FolderCardSyncState.Scanning -> R.string.state_scanning
@@ -106,7 +102,7 @@ fun FolderCard(
         }
         Text(text = stringResource(id = stateLabel))
 
-        if (folder.state is FolderCardSyncState.InProgress) {
+        if (folder.syncState is FolderCardSyncState.InProgress) {
             Box(
                 modifier = Modifier.padding(
                     top = 8.dp,
@@ -115,7 +111,7 @@ fun FolderCard(
                 )
             ) {
                 LinearProgressIndicator(
-                    progress = { folder.state.progress },
+                    progress = { folder.syncState.progress },
                     modifier = Modifier
                         .height(16.dp)
                         .fillMaxWidth()
@@ -131,12 +127,10 @@ private fun FolderCardUpToDatePreview() {
     SyncthingandroidTheme {
         FolderCard(
             folder = FolderCardState(
-                state = FolderCardSyncState.UpToDate,
-                view = FolderCardDataView(
-                    label = "My Synced Folder",
-                    path = "/storage/emulated/0/Sync",
-                    id = FolderID("who-knows")
-                )
+                syncState = FolderCardSyncState.UpToDate,
+                label = "My Synced Folder",
+                path = "/storage/emulated/0/Sync",
+                id = FolderID("who-knows")
             )
         )
     }
@@ -148,12 +142,10 @@ private fun FolderCardErrorPreview() {
     SyncthingandroidTheme {
         FolderCard(
             folder = FolderCardState(
-                state = FolderCardSyncState.Error,
-                view = FolderCardDataView(
-                    label = "My Synced Folder",
-                    path = "/storage/emulated/0/Sync",
-                    id = FolderID("who-knows")
-                )
+                syncState = FolderCardSyncState.Error,
+                label = "My Synced Folder",
+                path = "/storage/emulated/0/Sync",
+                id = FolderID("who-knows")
             )
         )
     }
@@ -165,12 +157,10 @@ private fun FolderCardInProgressPreview() {
     SyncthingandroidTheme {
         FolderCard(
             folder = FolderCardState(
-                state = FolderCardSyncState.InProgress(progress = 0.69f),
-                view = FolderCardDataView(
-                    label = "My Synced Folder",
-                    path = "/storage/emulated/0/Sync",
-                    id = FolderID("who-knows")
-                )
+                syncState = FolderCardSyncState.InProgress(progress = 0.69f),
+                label = "My Synced Folder",
+                path = "/storage/emulated/0/Sync",
+                id = FolderID("who-knows")
             )
         )
     }
@@ -182,12 +172,10 @@ private fun FolderCardScanningPreview() {
     SyncthingandroidTheme {
         FolderCard(
             folder = FolderCardState(
-                state = FolderCardSyncState.Scanning,
-                view = FolderCardDataView(
-                    label = "My Synced Folder",
-                    path = "/storage/emulated/0/Sync",
-                    id = FolderID("who-knows")
-                )
+                syncState = FolderCardSyncState.Scanning,
+                label = "My Synced Folder",
+                path = "/storage/emulated/0/Sync",
+                id = FolderID("who-knows")
             )
         )
     }
@@ -199,12 +187,10 @@ private fun FolderCardPausedPreview() {
     SyncthingandroidTheme {
         FolderCard(
             folder = FolderCardState(
-                state = FolderCardSyncState.Paused,
-                view = FolderCardDataView(
-                    label = "My Synced Folder",
-                    path = "/storage/emulated/0/Sync",
-                    id = FolderID("who-knows")
-                )
+                syncState = FolderCardSyncState.Paused,
+                label = "My Synced Folder",
+                path = "/storage/emulated/0/Sync",
+                id = FolderID("who-knows")
             )
         )
     }
