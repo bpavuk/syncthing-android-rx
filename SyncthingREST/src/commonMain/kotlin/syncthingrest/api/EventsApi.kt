@@ -22,6 +22,7 @@ class EventsApi(
         "DeviceConnected",
         "DeviceDisconnected",
         "DeviceDiscovered",
+        "DevicePaused",
         "DeviceResumed",
         "FolderCompletion",
         "FolderErrors",

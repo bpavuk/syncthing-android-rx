@@ -15,6 +15,7 @@ import syncthingrest.model.device.DeviceID
 import syncthingrest.model.device.events.DeviceConnectedEvent
 import syncthingrest.model.device.events.DeviceDisconnectedEvent
 import syncthingrest.model.device.events.DeviceDiscoveredEvent
+import syncthingrest.model.device.events.DevicePausedEvent
 import syncthingrest.model.device.events.DeviceResumedEvent
 
 class DevicesApi(
@@ -27,6 +28,7 @@ class DevicesApi(
         eventsApi.eventsFlow.filterIsInstance<DeviceDisconnectedEvent>()
     val deviceDiscoveredEventFlow = eventsApi.eventsFlow.filterIsInstance<DeviceDiscoveredEvent>()
     val deviceResumedEventFlow = eventsApi.eventsFlow.filterIsInstance<DeviceResumedEvent>()
+    val devicePausedEventFlow = eventsApi.eventsFlow.filterIsInstance<DevicePausedEvent>()
 
     companion object {
         private const val TAG = "DevicesApi"
