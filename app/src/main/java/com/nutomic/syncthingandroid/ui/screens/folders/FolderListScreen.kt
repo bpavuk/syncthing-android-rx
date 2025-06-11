@@ -23,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nutomic.syncthingandroid.ui.common.folder.FolderCard
+import com.nutomic.syncthingandroid.ui.common.folder.FolderCardViewModelImpl
 import org.koin.androidx.compose.koinViewModel
 import syncthingrest.model.folder.FolderID
 
@@ -76,15 +77,16 @@ fun FolderListScreen(
                     }
 
                     is FolderListUIState.Success -> {
-                        if (uiState.folderCards.isEmpty()) {
+                        if (uiState.folders.isEmpty()) {
                             Text("No folders found.")
                         } else {
-                            for (folder in uiState.folderCards) {
+                            for (folder in uiState.folders) {
                                 FolderCard(
-                                    folder = folder,
+                                    id = folder,
+                                    viewModel = koinViewModel<FolderCardViewModelImpl>(),
                                     modifier = Modifier.fillMaxWidth(),
                                     onFolderCardClick = {
-                                        currentDestination = FolderDestinations.Folder(folder.id)
+                                        currentDestination = FolderDestinations.Folder(folder)
                                     }
                                 )
                                 Spacer(Modifier.height(16.dp))

@@ -11,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import com.nutomic.syncthingandroid.service.SyncthingService
 import com.nutomic.syncthingandroid.service.SyncthingServiceBinder
 import com.nutomic.syncthingandroid.ui.SyncthingandroidApp
+import com.nutomic.syncthingandroid.ui.common.folder.FolderCardViewModelImpl
 import com.nutomic.syncthingandroid.ui.screens.devices.DeviceListViewModelImpl
 import com.nutomic.syncthingandroid.ui.screens.folders.FolderListViewModelImpl
 import com.nutomic.syncthingandroid.ui.screens.folders.FolderSettingsViewModelImpl
@@ -34,6 +35,11 @@ class MainComposeActivity : SyncthingActivity() {
         }
         viewModel {
             FolderSettingsViewModelImpl(
+                configRouter = get()
+            )
+        }
+        viewModel {
+            FolderCardViewModelImpl(
                 configRouter = get()
             )
         }
