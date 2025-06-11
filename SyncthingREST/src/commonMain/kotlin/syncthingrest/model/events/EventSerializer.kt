@@ -9,7 +9,7 @@ import syncthingrest.model.device.events.DeviceEvent
 import syncthingrest.model.folder.events.FolderEvent
 
 object EventSerializer : JsonContentPolymorphicSerializer<Event<*>>(Event::class) {
-    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<out Event<*>> {
+    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<Event<*>> {
         val type = element.jsonObject["type"]?.jsonPrimitive?.content
             ?: throw IllegalArgumentException("Event JSON must contain a 'type' field for polymorphic deserialization")
 

@@ -2,11 +2,12 @@ package syncthingrest.model.device.events
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import syncthingrest.model.device.DeviceID
 
 @Serializable
 data class DeviceConnectedEventData(
     val addr: String,
-    val id: String,
+    val id: DeviceID,
     val deviceName: String,
     val clientName: String,
     val clientVersion: String,
