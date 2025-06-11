@@ -14,6 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.nutomic.syncthingandroid.ui.common.slides.SlidesController
 import com.nutomic.syncthingandroid.ui.common.slides.rememberSlideState
+import com.nutomic.syncthingandroid.ui.screens.firstStart.slides.NotificationPermissionSlide
 import com.nutomic.syncthingandroid.ui.screens.firstStart.slides.keygen.KeyGenerationViewModelImpl
 import com.nutomic.syncthingandroid.ui.theme.SyncthingandroidTheme
 

@@ -1,4 +1,4 @@
-package com.nutomic.syncthingandroid.ui.screens.firstStart
+package com.nutomic.syncthingandroid.ui.screens.firstStart.slides
 
 import android.Manifest
 import android.os.Build
@@ -64,6 +64,7 @@ fun NotificationPermissionSlide(modifier: Modifier = Modifier, slideState: Slide
                 }
                 else -> {
                     Text("No notification permission required on this device.")
+                    slideState.forwardBlocked = false
                 }
             }
         }
