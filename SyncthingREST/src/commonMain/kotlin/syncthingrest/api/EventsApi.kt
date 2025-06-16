@@ -1,6 +1,7 @@
 package syncthingrest.api
 
 import io.ktor.client.call.body
+import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.http.path
@@ -11,6 +12,7 @@ import syncthingrest.RestApiKt
 import syncthingrest.logging.Logger
 import syncthingrest.model.events.Event
 import syncthingrest.model.events.EventData
+import java.net.ConnectException
 
 class EventsApi(
     val restApi: RestApiKt,
@@ -40,7 +42,7 @@ class EventsApi(
                 val eventResponse = restApi.client.get {
                     url {
                         path("rest/events")
-                        parameter("timeout", 300) // seconds
+                        parameter("timeout", 3) // seconds
                         parameter("events", supportedEvents.joinToString(separator = ","))
                         if (lastSeenId > 0) parameter("since", lastSeenId)
                     }
@@ -50,7 +52,12 @@ class EventsApi(
                 events.lastOrNull()?.id?.let { lastSeenId = it }
                 if (events.isNotEmpty()) events.forEach { emit(it) }
             } catch (e: Exception) {
-                logger.e(TAG, "Failed to get an Event: ${e.message}", e)
+                if (e !is HttpRequestTimeoutException) {
+                    logger.e(TAG, "Failed to get an Event: ${e.message}", e)
+                }
+                if (e is ConnectException) {
+                    delay(50)
+                }
             } finally {
                 delay(timeMillis = 10)
             }
