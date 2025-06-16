@@ -1,19 +1,26 @@
 package com.nutomic.syncthingandroid.ui.screens.devices
 
 import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.nutomic.syncthingandroid.ui.common.device.DeviceCardState
-import com.nutomic.syncthingandroid.ui.common.device.DeviceCardSyncState
-import com.nutomic.syncthingandroid.util.ConfigRouterKt
 import com.nutomic.syncthingandroid.util.ConfigXml
+import com.nutomic.syncthingandroid.util.configkt.ConfigRouterKt
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import syncthingrest.model.device.DeviceID
+
+sealed interface DeviceListUIState {
+    data object Loading : DeviceListUIState
+    data object FailedToLoad : DeviceListUIState
+    data class Success(
+        val deviceIDs: List<DeviceID>
+    ) : DeviceListUIState
+}
 
 interface DeviceListViewModel {
-    val devices: List<DeviceCardState>
+    val uiState: StateFlow<DeviceListUIState>
 
     fun updateDevices()
 }
@@ -22,30 +29,23 @@ class DeviceListViewModelImpl(
     private val configRouter: ConfigRouterKt,
 ) : DeviceListViewModel, ViewModel() {
 
-    override var devices: List<DeviceCardState> by mutableStateOf(emptyList())
-        private set
+    private val _uiState: MutableStateFlow<DeviceListUIState> =
+        MutableStateFlow(DeviceListUIState.Loading)
+    override val uiState: StateFlow<DeviceListUIState> = _uiState.asStateFlow()
 
     override fun updateDevices() {
         viewModelScope.launch {
             try {
-                devices = configRouter.loadDevices().map { device ->
-                    DeviceCardState(
-                        syncState = if (device.paused) {
-                            DeviceCardSyncState.Paused
-                        } else {
-                            DeviceCardSyncState.UpToDate
-                        },
-                        label = device.name,
-                        deviceID = device.deviceID,
-                    )
-                }
+                _uiState.value = DeviceListUIState.Success(
+                    deviceIDs = configRouter.devices.loadDevices().map { it.deviceID }
+                )
             } catch (e: ConfigXml.OpenConfigException) {
                 Log.e(
                     TAG,
                     "Failed to parse existing config. You will need support from here...",
                     e
                 )
-                devices = emptyList() // Ensure devices is in a consistent state on error
+                _uiState.value = DeviceListUIState.FailedToLoad
             }
         }
     }
