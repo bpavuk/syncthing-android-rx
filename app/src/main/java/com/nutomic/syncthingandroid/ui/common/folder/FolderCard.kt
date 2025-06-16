@@ -1,6 +1,8 @@
 package com.nutomic.syncthingandroid.ui.common.folder
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -38,6 +40,7 @@ sealed interface FolderCardState {
         val label: String,
         val path: String
     ) : FolderCardState
+
     data object Loading : FolderCardState
     data object Error : FolderCardState
 }
@@ -132,6 +135,10 @@ fun FolderCard(
             Text(text = stringResource(id = stateLabel))
 
             if (folder.syncState is FolderCardSyncState.InProgress) {
+                val animatedProgress by animateFloatAsState(
+                    targetValue = folder.syncState.progress,
+                    animationSpec = tween(),
+                )
                 Box(
                     modifier = Modifier.padding(
                         top = 8.dp,
@@ -140,7 +147,7 @@ fun FolderCard(
                     )
                 ) {
                     LinearProgressIndicator(
-                        progress = { folder.syncState.progress },
+                        progress = { animatedProgress },
                         modifier = Modifier
                             .height(16.dp)
                             .fillMaxWidth()
