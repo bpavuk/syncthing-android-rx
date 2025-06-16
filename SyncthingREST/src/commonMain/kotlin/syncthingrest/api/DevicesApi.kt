@@ -23,12 +23,14 @@ class DevicesApi(
     eventsApi: EventsApi,
     private val logger: Logger = Logger,
 ) {
-    val deviceConnectedEventFlow = eventsApi.eventsFlow.filterIsInstance<DeviceConnectedEvent>()
+    val deviceConnectedEventFlow =
+        eventsApi.eventsSharedFlow.filterIsInstance<DeviceConnectedEvent>()
     val deviceDisconnectedEventFlow =
-        eventsApi.eventsFlow.filterIsInstance<DeviceDisconnectedEvent>()
-    val deviceDiscoveredEventFlow = eventsApi.eventsFlow.filterIsInstance<DeviceDiscoveredEvent>()
-    val deviceResumedEventFlow = eventsApi.eventsFlow.filterIsInstance<DeviceResumedEvent>()
-    val devicePausedEventFlow = eventsApi.eventsFlow.filterIsInstance<DevicePausedEvent>()
+        eventsApi.eventsSharedFlow.filterIsInstance<DeviceDisconnectedEvent>()
+    val deviceDiscoveredEventFlow =
+        eventsApi.eventsSharedFlow.filterIsInstance<DeviceDiscoveredEvent>()
+    val deviceResumedEventFlow = eventsApi.eventsSharedFlow.filterIsInstance<DeviceResumedEvent>()
+    val devicePausedEventFlow = eventsApi.eventsSharedFlow.filterIsInstance<DevicePausedEvent>()
 
     companion object {
         private const val TAG = "DevicesApi"

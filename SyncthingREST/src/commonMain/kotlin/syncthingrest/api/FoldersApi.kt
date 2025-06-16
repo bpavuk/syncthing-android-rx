@@ -25,21 +25,22 @@ class FoldersApi(
     eventsApi: EventsApi,
     private val logger: Logger = Logger
 ) {
-    val folderCompletionEventFlow = eventsApi.eventsFlow.filterIsInstance<FolderCompletionEvent>()
+    val folderCompletionEventFlow =
+        eventsApi.eventsSharedFlow.filterIsInstance<FolderCompletionEvent>()
 
-    val folderErrorsEventFlow = eventsApi.eventsFlow.filterIsInstance<FolderErrorsEvent>()
+    val folderErrorsEventFlow = eventsApi.eventsSharedFlow.filterIsInstance<FolderErrorsEvent>()
 
-    val folderPausedEventFlow = eventsApi.eventsFlow.filterIsInstance<FolderPausedEvent>()
+    val folderPausedEventFlow = eventsApi.eventsSharedFlow.filterIsInstance<FolderPausedEvent>()
 
-    val folderResumedEventFlow = eventsApi.eventsFlow.filterIsInstance<FolderResumedEvent>()
+    val folderResumedEventFlow = eventsApi.eventsSharedFlow.filterIsInstance<FolderResumedEvent>()
 
     val folderScanProgressEventFlow =
-        eventsApi.eventsFlow.filterIsInstance<FolderScanProgressEvent>()
+        eventsApi.eventsSharedFlow.filterIsInstance<FolderScanProgressEvent>()
 
-    val folderSummaryEventFlow = eventsApi.eventsFlow.filterIsInstance<FolderSummaryEvent>()
+    val folderSummaryEventFlow = eventsApi.eventsSharedFlow.filterIsInstance<FolderSummaryEvent>()
 
     val folderWatchStateChangedEventFlow =
-        eventsApi.eventsFlow.filterIsInstance<FolderWatchStateChangedEvent>()
+        eventsApi.eventsSharedFlow.filterIsInstance<FolderWatchStateChangedEvent>()
 
     companion object {
         private const val TAG = "FoldersApi"

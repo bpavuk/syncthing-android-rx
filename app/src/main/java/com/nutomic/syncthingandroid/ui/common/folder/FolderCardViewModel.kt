@@ -67,6 +67,8 @@ class FolderCardViewModelImpl(private val configRouter: ConfigRouterKt) : Folder
     }
 
     private suspend fun CoroutineScope.subscribeToFolderEvents(id: FolderID) {
+        configRouter.subscribeToEvents(this)
+
         var latestFolderEventId = 0
         folderEventFlow.filter {
             when (it) {

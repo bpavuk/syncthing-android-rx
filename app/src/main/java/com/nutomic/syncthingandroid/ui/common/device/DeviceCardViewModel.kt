@@ -19,6 +19,7 @@ import syncthingrest.model.device.events.DeviceConnectedEvent
 import syncthingrest.model.device.events.DeviceConnectedEventData
 import syncthingrest.model.device.events.DeviceDisconnectedEvent
 import syncthingrest.model.device.events.DeviceDisconnectedEventData
+import syncthingrest.model.device.events.DeviceDiscoveredEvent
 import syncthingrest.model.device.events.DeviceDiscoveredEventData
 import syncthingrest.model.device.events.DevicePausedEvent
 import syncthingrest.model.device.events.DevicePausedEventData
@@ -80,14 +81,17 @@ class DeviceCardViewModelImpl(private val configRouter: ConfigRouterKt) : Device
     }
 
     private suspend fun CoroutineScope.subscribeToDeviceEvents(id: DeviceID) {
+        configRouter.subscribeToEvents(this)
+
         var latestDeviceEventId = 0
-        deviceEventFlow.filter {
+
+        deviceEventFlow.filter { // Getting only events relevant to this particular device
             when (it) {
                 is DeviceConnectedEvent -> it.data.id == id
                 is DeviceDisconnectedEvent -> it.data.id == id
                 is DevicePausedEvent -> it.data.device == id
                 is DeviceResumedEvent -> it.data.device == id
-                else -> TODO()
+                is DeviceDiscoveredEvent -> it.data.device == id
             }
         }.stateIn(this).collect { event ->
             if (event.globalID <= latestDeviceEventId) {
@@ -98,7 +102,7 @@ class DeviceCardViewModelImpl(private val configRouter: ConfigRouterKt) : Device
             val currentState = _uiState.value
             if (currentState is DeviceCardState.Success) {
                 val data = event.data
-                when (data) {
+                when (data) { // Mapping events to sync states
                     is DeviceConnectedEventData -> {
                         Log.d(TAG, "DeviceConnectedEvent")
                         _uiState.emit(
@@ -123,7 +127,9 @@ class DeviceCardViewModelImpl(private val configRouter: ConfigRouterKt) : Device
                             currentState.copy(syncState = DeviceCardSyncState.UpToDate)
                         )
                     }
-                    is DeviceDiscoveredEventData -> TODO()
+                    is DeviceDiscoveredEventData -> {
+                        // ignoring!
+                    }
                 }
             }
             latestDeviceEventId = event.globalID
