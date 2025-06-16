@@ -42,8 +42,9 @@ fun FolderListScreen(
                 currentDestination = FolderDestinations.Home
             }
 
+            val folderID = (currentDestination as FolderDestinations.Folder).folderID.value
             FolderSettingsScreen(
-                viewModel = koinViewModel<FolderSettingsViewModelImpl>(),
+                viewModel = koinViewModel<FolderSettingsViewModelImpl>(key = folderID),
                 folderId = (currentDestination as FolderDestinations.Folder).folderID,
                 modifier = Modifier.padding(16.dp) then modifier
             )
@@ -83,7 +84,9 @@ fun FolderListScreen(
                             for (folder in uiState.folders) {
                                 FolderCard(
                                     id = folder,
-                                    viewModel = koinViewModel<FolderCardViewModelImpl>(),
+                                    viewModel = koinViewModel<FolderCardViewModelImpl>(
+                                        key = folder.value
+                                    ),
                                     modifier = Modifier.fillMaxWidth(),
                                     onFolderCardClick = {
                                         currentDestination = FolderDestinations.Folder(folder)
