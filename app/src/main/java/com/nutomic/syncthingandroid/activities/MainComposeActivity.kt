@@ -14,6 +14,7 @@ import com.nutomic.syncthingandroid.ui.SyncthingandroidApp
 import com.nutomic.syncthingandroid.ui.common.device.DeviceCardViewModelImpl
 import com.nutomic.syncthingandroid.ui.common.folder.FolderCardViewModelImpl
 import com.nutomic.syncthingandroid.ui.screens.devices.DeviceListViewModelImpl
+import com.nutomic.syncthingandroid.ui.screens.folders.FolderCreationViewModelImpl
 import com.nutomic.syncthingandroid.ui.screens.folders.FolderListViewModelImpl
 import com.nutomic.syncthingandroid.ui.screens.folders.FolderSettingsViewModelImpl
 import com.nutomic.syncthingandroid.ui.theme.SyncthingandroidTheme
@@ -36,6 +37,11 @@ class MainComposeActivity : SyncthingActivity() {
         }
         viewModel {
             FolderSettingsViewModelImpl(
+                configRouter = get()
+            )
+        }
+        viewModel {
+            FolderCreationViewModelImpl(
                 configRouter = get()
             )
         }

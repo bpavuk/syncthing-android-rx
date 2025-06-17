@@ -5,8 +5,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CreateNewFolder
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -23,18 +26,23 @@ import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import com.nutomic.syncthingandroid.R
 import com.nutomic.syncthingandroid.ui.screens.devices.DeviceListScreen
 import com.nutomic.syncthingandroid.ui.screens.devices.DeviceListViewModelImpl
+import com.nutomic.syncthingandroid.ui.screens.folders.FolderCreationScreen
+import com.nutomic.syncthingandroid.ui.screens.folders.FolderCreationViewModelImpl
 import com.nutomic.syncthingandroid.ui.screens.folders.FolderListScreen
 import com.nutomic.syncthingandroid.ui.screens.folders.FolderListViewModelImpl
 import org.koin.androidx.compose.koinViewModel
+import kotlin.random.Random
 
 @PreviewScreenSizes
 @Composable
 fun SyncthingandroidApp() {
-    var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.FOLDERS) }
+    var currentDestination: AppDestinations by rememberSaveable {
+        mutableStateOf(AppDestinations.BottomBarDestinations.FOLDERS)
+    }
 
     NavigationSuiteScaffold(
         navigationSuiteItems = {
-            AppDestinations.entries.forEach {
+            AppDestinations.BottomBarDestinations.entries.forEach {
                 item(
                     icon = {
                         Icon(
@@ -49,28 +57,83 @@ fun SyncthingandroidApp() {
             }
         }
     ) {
-        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            floatingActionButton = {
+                val destination = currentDestination
+                if (destination is AppDestinations.BottomBarDestinations) {
+                    when (destination) {
+                        AppDestinations.BottomBarDestinations.FOLDERS -> FloatingActionButton(
+                            onClick = {
+                                currentDestination =
+                                    AppDestinations.FloatingActionButtonDestinations.ADD_FOLDER
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CreateNewFolder,
+                                contentDescription = "Add folder"
+                            )
+                        }
+
+                        AppDestinations.BottomBarDestinations.DEVICES -> FloatingActionButton(
+                            onClick = {
+                                /* currentDestination = AppDestinations.FloatingActionButtonDestinations.ADD_DEVICE */
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Add device"
+                            )
+                        }
+
+                        else -> {
+                            /* none! */
+                        }
+                    }
+                }
+            }
+        ) { innerPadding ->
             when (currentDestination) {
-                AppDestinations.FOLDERS -> FolderListScreen(
+                AppDestinations.BottomBarDestinations.FOLDERS -> FolderListScreen(
                     modifier = Modifier.padding(innerPadding),
                     viewModel = koinViewModel<FolderListViewModelImpl>()
                 )
-                AppDestinations.DEVICES -> DeviceListScreen(
+
+                AppDestinations.BottomBarDestinations.DEVICES -> DeviceListScreen(
                     modifier = Modifier.padding(innerPadding),
                     viewModel = koinViewModel<DeviceListViewModelImpl>()
                 )
-//                AppDestinations.STATUS -> StatusScreen(modifier = Modifier.padding(innerPadding))
+
+//                AppDestinations.BottomBarDestinations.STATUS -> StatusScreen(modifier = Modifier.padding(innerPadding))
+
+                AppDestinations.FloatingActionButtonDestinations.ADD_FOLDER -> FolderCreationScreen(
+                    modifier = Modifier.padding(innerPadding),
+                    viewModel = koinViewModel<FolderCreationViewModelImpl>(key = Random.nextInt().toString()),
+                    onScreenExit = {
+                        currentDestination = AppDestinations.BottomBarDestinations.FOLDERS
+                    }
+                )
+
                 else -> Text("TODO")
             }
         }
     }
 }
 
-enum class AppDestinations(
-    @StringRes val label: Int,
-    val icon: ImageVector,
-) {
-    FOLDERS(R.string.folders_fragment_title, Icons.Default.Home),
-    DEVICES(R.string.devices_fragment_title, Icons.Default.Favorite),
-    STATUS(R.string.status_fragment_title, Icons.Default.AccountBox),
+sealed interface AppDestinations {
+
+    // bottom bar
+    enum class BottomBarDestinations(
+        @StringRes val label: Int,
+        val icon: ImageVector,
+    ) : AppDestinations {
+        FOLDERS(R.string.folders_fragment_title, Icons.Default.Home),
+        DEVICES(R.string.devices_fragment_title, Icons.Default.Favorite),
+        STATUS(R.string.status_fragment_title, Icons.Default.AccountBox),
+    }
+
+    // FAB
+    enum class FloatingActionButtonDestinations : AppDestinations {
+        ADD_FOLDER
+    }
 }

@@ -33,9 +33,21 @@ class FolderRouter(private val configRouter: ConfigRouterKt) {
         return configRouter.restApi.folders.getFolder(folderId).fold(
             onSuccess = { it },
             onFailure = { e ->
-                Log.e("FolderRouter", "Failed request!", e)
+                Log.e("FolderRouter", "Failed to get folder id ${folderId.value}: ${e.message}", e)
                 configRouter.configXml.loadConfig()
                 configRouter.configXml.folders?.firstOrNull { it.id == folderId.value }?.toKotlin()
+            }
+        )
+    }
+
+    suspend fun createFolder(folder: Folder) {
+        configRouter.restApi.folders.addFolder(folder).fold(
+            onSuccess = { it },
+            onFailure = { e ->
+                Log.e("FolderRouter", "Failed to create folder: ${e.message}", e)
+                configRouter.configXml.loadConfig()
+                configRouter.configXml.addFolder(folder.toJava())
+                configRouter.configXml.saveChanges()
             }
         )
     }
@@ -44,7 +56,7 @@ class FolderRouter(private val configRouter: ConfigRouterKt) {
         configRouter.restApi.folders.updateFolder(folder).fold(
             onSuccess = { it },
             onFailure = { e ->
-                Log.e("FolderRouter", "Failed request!", e)
+                Log.e("FolderRouter", "Failed to update folder: ${e.message}", e)
                 configRouter.configXml.loadConfig()
                 configRouter.configXml.updateFolder(folder.toJava())
                 configRouter.configXml.saveChanges()
@@ -56,7 +68,7 @@ class FolderRouter(private val configRouter: ConfigRouterKt) {
         configRouter.restApi.folders.deleteFolder(id).fold(
             onSuccess = { it },
             onFailure = { e ->
-                Log.e("FolderRouter", "Failed request!", e)
+                Log.e("FolderRouter", "Failed to delete folder: ${e.message}", e)
                 configRouter.configXml.loadConfig()
                 configRouter.configXml.removeFolder(id.value)
                 configRouter.configXml.saveChanges()
